@@ -13,7 +13,7 @@ module.exports = models => {
   const route = Router();
 
   route.route('/login').post(login(models))
-  route.route('/profile').put(verifyToken, profile(models))
+  route.route('/profile/:idUser').put(verifyToken, profile(models))
   route.route('/authToken').get(verifyToken, authToken(models))
 
   route.route('/forgotpass').post(verifyToken, forgotPass(models))

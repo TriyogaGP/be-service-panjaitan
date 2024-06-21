@@ -7,8 +7,6 @@ const {
 const { 
 	_buildResponseUser,
 	_buildResponseAdmin,
-	_buildResponseStruktural,
-	_buildResponseSiswaSiswi
 } = require('../utils/build-response');
 const { encrypt, decrypt } = require('@triyogagp/backend-common/utils/helper.utils');
 const { Op } = require('sequelize')
@@ -64,10 +62,11 @@ function login (models) {
 					expiresIn: '1d'
 			});
 
-			let result = await _buildResponseUser(data, refreshToken, accessToken)
+			let result = await _buildResponseUser(data, refreshToken, accessToken, models)
 
 			return OK(res, result, `Selamat Datang ${result.nama} sebagai ${result.namaRole}`)
     } catch (err) {
+			console.log(err);
 			return NOT_FOUND(res, err.message)
     }
   }  
@@ -152,6 +151,7 @@ function ubahProfile (models) {
     try {
 			const { userID } = req.JWTDecoded
 			let kirimdataUser = {
+				consumerType: body.consumerType,
 				wilayah: body.wilayah,
 				nama: body.nama,
 				username: body.username,

@@ -12,7 +12,8 @@ const {
 	makeRandom,
 	UpperFirstLetter,
 	inisialuppercaseLetterFirst,
-	buildMysqlResponseWithPagination
+	buildMysqlResponseWithPagination,
+	buildOrderQuery,
 } = require('@triyogagp/backend-common/utils/helper.utils')
 const {
 	_wilayahOption,
@@ -49,17 +50,12 @@ function updateFile (models) {
 		let body = { ...req.body, namaFile };
     try {
 			let kirimdata
-			if(body.table == 'UserDetail'){
-				kirimdata = 
-				body.field == 'ijazah' ? { fcIjazah: body.nama_folder+'/'+body.namaFile } : 
-				body.field == 'skhun' ? { fcSKHUN: body.nama_folder+'/'+body.namaFile } : 
-				body.field == 'kk' ? { fcKK: body.nama_folder+'/'+body.namaFile } : 
-				body.field == 'ktp' ? { fcKTPOrtu: body.nama_folder+'/'+body.namaFile } : 
-				body.field == 'aktalahir' ? { fcAktaLahir: body.nama_folder+'/'+body.namaFile } : 
-				body.field == 'skl' ? { fcSKL: body.nama_folder+'/'+body.namaFile } : 
-				body.field == 'signature' ? { signature: body.nama_folder+'/'+body.namaFile } : 
-				{ fotoProfil: body.nama_folder+'/'+body.namaFile }
-				await models.UserDetail.update(kirimdata, { where: { idUser: body.idUser } })
+			if(body.table == 'Admin'){
+				kirimdata = { fotoProfil: body.nama_folder+'/'+body.namaFile }
+				await models.Admin.update(kirimdata, { where: { idAdmin: body.idUser } })
+			}else if(body.table == 'Biodata'){
+				kirimdata = { fotoProfil: body.nama_folder+'/'+body.namaFile }
+				await models.Biodata.update(kirimdata, { where: { idBiodata: body.idUser } })
 			}else if(body.table == 'CMSSetting'){
 				kirimdata = { 
 					setting: JSON.stringify({
@@ -289,11 +285,11 @@ function getRole (models) {
     try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['idRole', sort ? sort : 'ASC'],
 			]
 
 			if(pilihan == 'ALL') {
-				const dataRole = await models.Role.findAll({
+				const dataRole = await models.RoleAdmin.findAll({
 					order,
 				});
 
@@ -308,7 +304,7 @@ function getRole (models) {
 
 			where = whereKey
 
-			const { count, rows: dataRole } = await models.Role.findAndCountAll({
+			const { count, rows: dataRole } = await models.RoleAdmin.findAndCountAll({
 				where,
 				order,
 				limit: parseInt(limit),
@@ -337,15 +333,15 @@ function crudRole (models) {
 					status: true,
 					namaRole: body.nama_role
 				}
-				const {count, rows} = await models.Role.findAndCountAll({where});
+				const {count, rows} = await models.RoleAdmin.findAndCountAll({where});
 				if(count) return NOT_FOUND(res, 'data sudah di gunakan !')
 				kirimdata = {
 					namaRole: body.nama_role,
-					status: 1,
+					statusRole: 1,
 				}
-				let kirim = await models.Role.create(kirimdata)
+				let kirim = await models.RoleAdmin.create(kirimdata)
 				if(kirim){
-					let data = await models.Role.findOne({where: {namaRole: body.nama_role}})
+					let data = await models.RoleAdmin.findOne({where: {namaRole: body.nama_role}})
 					let sendData = {
 						idRole: data.idRole,
 						menu: '',
@@ -353,22 +349,22 @@ function crudRole (models) {
 					await models.RoleMenu.create(sendData)
 				}
 			}else if(body.jenis == 'EDIT'){
-				if(await models.Role.findOne({where: {namaRole: body.nama_role, [Op.not]: [{idRole: body.id_role}]}})) return NOT_FOUND(res, 'Nama Role sudah di gunakan !')
+				if(await models.RoleAdmin.findOne({where: {namaRole: body.nama_role, [Op.not]: [{idRole: body.id_role}]}})) return NOT_FOUND(res, 'Nama Role sudah di gunakan !')
 				kirimdata = {
 					namaRole: body.nama_role,
-					status: 1,
+					statusRole: 1,
 				}
-				await models.Role.update(kirimdata, { where: { idRole: body.id_role } })
+				await models.RoleAdmin.update(kirimdata, { where: { idRole: body.id_role } })
 			}else if(body.jenis == 'DELETE'){
 				kirimdata = {
-					status: 0
+					statusRole: 0
 				}
-				await models.Role.update(kirimdata, { where: { idRole: body.id_role } })	
+				await models.RoleAdmin.update(kirimdata, { where: { idRole: body.id_role } })	
 			}else if(body.jenis == 'STATUSRECORD'){
 				kirimdata = { 
-					status: body.status 
+					statusRole: body.status_role 
 				}
-				await models.Role.update(kirimdata, { where: { idRole: body.id_role } })
+				await models.RoleAdmin.update(kirimdata, { where: { idRole: body.id_role } })
 			}else{
 				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
 			}
@@ -434,9 +430,9 @@ function getRoleMenu (models) {
 				where,
 				include: [
 					{ 
-						model: models.Role,
+						model: models.RoleAdmin,
 						attributes: ['namaRole'],
-						where: { status: true }
+						where: { statusRole: true }
 					}
 				],
 				limit: parseInt(limit),
@@ -447,7 +443,7 @@ function getRoleMenu (models) {
 				let obj = {
 					idRoleMenu: val.dataValues.idRoleMenu,
 					idRole: val.dataValues.idRole,
-					namaRole: val.dataValues.Role.namaRole
+					namaRole: val.dataValues.RoleAdmin.namaRole
 				}
 				let objectBaru = Object.assign(obj, {
 					menu: val.dataValues.menu ? JSON.parse([val.dataValues.menu]) : []
@@ -509,28 +505,61 @@ function crudRoleMenu (models) {
   }  
 }
 
+function getCountNotifikasi (models) {
+	return async (req, res, next) => {
+    try {
+			const { userID } = req.JWTDecoded
+			const notif = await models.TemporaryData.findAll({
+				where: { statusExecute: 'Menunggu Persetujuan Permohonan' },
+				order: [['createdAt','DESC']],
+			});
+
+			const result = notif.reduce((memo, notifikasi) => {
+				const tmp = memo
+				const { idAdmin } = notifikasi;
+				if(_.includes(idAdmin, userID)) tmp.notif += 1
+				return tmp
+			}, {
+				notif: 0,
+			})
+
+			const response = [
+				{
+					kode: '1',
+					text: 'All Notification',
+					count: result.notif,
+				},
+			]
+
+			return OK(res, response);
+	  } catch (err) {
+			return NOT_FOUND(res, err.message)
+	  }
+	}  
+}
+
 function getKategoriNotifikasi (models) {
 	return async (req, res, next) => {
     try {
 			const { userID } = req.JWTDecoded
-			const datakategori = await models.Notifikasi.findAll({
-				where: { idUser: userID, isRead: false },
+			const notif = await models.TemporaryData.findAll({
+				where: { statusExecute: 'Menunggu Persetujuan Permohonan' },
 				order: [['createdAt','DESC']],
 			});
 
-			const result = datakategori.reduce((memo, notifikasi) => {
+			const result = notif.reduce((memo, notifikasi) => {
 				const tmp = memo
-				const { type } = notifikasi
-				if(type === 'Record') tmp.record += 1
-				if(type === 'Report') tmp.report += 1
-				// if(type === 'Broadcast') tmp.broadcast += 1
+				const { idAdmin, jenis } = notifikasi;
+				if(_.includes(idAdmin, userID)) {
+					if(jenis === 'Update') tmp.ubah += 1
+					if(jenis === 'Delete') tmp.hapus += 1
+				}
 				tmp.all += 1
 				return tmp
 			}, {
 				all: 0,
-				record: 0,
-				report: 0,
-				// broadcast: 0,
+				ubah: 0,
+				hapus: 0,
 			})
 
 			const response = [
@@ -541,19 +570,14 @@ function getKategoriNotifikasi (models) {
 				},
 				{
 					kode: '2',
-					text: 'Record',
-					count: result.record,
+					text: 'Update Data',
+					count: result.ubah,
 				},
 				{
 					kode: '3',
-					text: 'Report',
-					count: result.report,
+					text: 'Delete Data',
+					count: result.hapus,
 				},
-				// {
-				// 	kode: '4',
-				// 	text: 'Broadcast',
-				// 	count: result.broadcast,
-				// },
 			]
 
 			return OK(res, response);
@@ -565,43 +589,41 @@ function getKategoriNotifikasi (models) {
 
 function getNotifikasi (models) {
 	return async (req, res, next) => {
-	  let { page = 1, limit = 5, kategori, untuk } = req.query
-		let whereUntuk = {}
+	  let { page = 1, limit = 5, kategori } = req.query
+		let where = {}
     try {
 			const { userID } = req.JWTDecoded
-			if(untuk === 'pengirim'){
-				whereUntuk.createBy = userID
-			}else{
-				whereUntuk.idUser = userID
-			}
-			const type = kategori === '1' ? ['Record', 'Report', 'Broadcast'] : kategori === '2' ? ['Record'] : kategori === '4' ? ['Broadcast'] : ['Report']
+			const type = kategori === '1' ? ['Update', 'Delete'] : kategori === '2' ? ['Update'] : ['Delete']
 			const offset = limit * (page - 1)
-			const { count, rows: datanotifikasi } = await models.Notifikasi.findAndCountAll({
-				where: { ...whereUntuk, type: type },
+			const { count, rows: datanotifikasi } = await models.TemporaryData.findAndCountAll({
+				where: { jenis: type },
 				order: [['createdAt','DESC']],
 				limit: parseInt(limit, 10),
 				offset,
 			});
 
+			// return OK(res, datanotifikasi);
+
 			const records = await Promise.all(datanotifikasi.map(async val => {
-				const dataBerkas = await models.Berkas.findAll({ where: { idBerkas: JSON.parse(val.dataValues.tautan), statusAktif: true } })
-				const dataUser = await models.User.findOne({ where: { idUser: val.dataValues.idUser } })
-				let pesan = JSON.parse(val.dataValues.pesan)
-				return {
-					...val.dataValues,
-					pesan: {
-						message: pesan.message,
-						payload: JSON.stringify(pesan.payload),
-					},
-					params: JSON.parse(val.dataValues.params),
-					tautan: await dataBerkas.map(k => {
-						return {
-							...k.dataValues,
-							file: `${BASE_URL}berkas/${k.dataValues.file}`
-						}
-					}),
-					tujuan: dataUser.nama,
-					createdAt: convertDateTime(val.dataValues.createdAt),
+				let id_admin = JSON.parse(val.dataValues.idAdmin);
+				if(_.includes(id_admin, userID)) {
+					const dataUserTujuan = await models.Admin.findOne({ where: { idAdmin: userID } })
+					const dataUserReq = await models.Admin.findOne({ where: { idAdmin: val.createBy } })
+					let pesan = JSON.parse(val.dataValues.dataTemporary)
+
+					return {
+						...val.dataValues,
+						idAdmin: userID,
+						pesan: {
+							title: pesan.title,
+							message: pesan.message,
+							payload: JSON.stringify(pesan.payload),
+							reason: pesan.reason,
+						},
+						tujuan: dataUserTujuan.nama,
+						request: dataUserReq.nama,
+						createdAt: convertDateTime(val.dataValues.createdAt),
+					}
 				}
 			}))
 
@@ -624,60 +646,6 @@ function getNotifikasi (models) {
 	}  
 }
 
-function getCountNotifikasi (models) {
-	return async (req, res, next) => {
-    try {
-			const { userID } = req.JWTDecoded
-			const datakategori = await models.Notifikasi.findAll({
-				where: { idUser: userID, isRead: false },
-				order: [['createdAt','DESC']],
-			});
-
-			const result = datakategori.reduce((memo, notifikasi) => {
-				const tmp = memo
-				const { type } = notifikasi
-				if(type === 'Record') tmp.record += 1
-				if(type === 'Report') tmp.report += 1
-				if(type === 'Broadcast') tmp.broadcast += 1
-				tmp.all += 1
-				return tmp
-			}, {
-				all: 0,
-				record: 0,
-				report: 0,
-				broadcast: 0,
-			})
-
-			const response = [
-				{
-					kode: '1',
-					text: 'All Notification',
-					count: result.all,
-				},
-				{
-					kode: '2',
-					text: 'Record',
-					count: result.record,
-				},
-				{
-					kode: '3',
-					text: 'Report',
-					count: result.report,
-				},
-				{
-					kode: '4',
-					text: 'Broadcast',
-					count: result.broadcast,
-				},
-			]
-
-			return OK(res, response);
-	  } catch (err) {
-			return NOT_FOUND(res, err.message)
-	  }
-	}  
-}
-
 function crudNotifikasi (models) {
 	return async (req, res, next) => {
 	  let body = { ...req.body }
@@ -687,48 +655,64 @@ function crudNotifikasi (models) {
 				let payload = {
 					isRead: 1,
 				}
-				await models.Notifikasi.update(payload, { where: { idNotifikasi: body.idNotifikasi } })
+				await models.TemporaryData.update(payload, { where: { idTemporaryData: body.idTemporaryData } })
 			}else if(body.jenis === 'ISREADALL'){
-				const type = body.kategori === '1' ? ['Record', 'Report'] : body.kategori === '2' ? ['Record'] : body.kategori === '4' ? ['Broadcast'] : ['Report']
-				const datanotifikasi = await models.Notifikasi.findAll({
-					where: { idUser: userID, type: type, isRead: 0 },
-					attributes: ["idNotifikasi", "type"],
+				const type = body.kategori === '1' ? ['Update', 'Delete'] : body.kategori === '2' ? ['Update'] : ['Delete']
+				const datanotifikasi = await models.TemporaryData.findAll({
+					where: { jenis: type, isRead: 0 },
+					attributes: ["idTemporaryData", "jenis"],
 				});
 				await Promise.all(datanotifikasi.map(async val => {
-					await models.Notifikasi.update({ isRead: 1 }, { where: { idNotifikasi: val.dataValues.idNotifikasi } })
+					await models.TemporaryData.update({ isRead: 1 }, { where: { idTemporaryData: val.dataValues.idTemporaryData } })
 				}))
-			}else if(body.jenis === 'CREATE'){
-				let payload = {
-					idNotifikasi: await createKSUID(),
-					idUser: body.idUser,
-					type: body.type,
-					judul: body.judul,
-					pesan: JSON.stringify(body.pesan),
-					params: body.params !== null ? JSON.stringify(body.params) : null,
-					dikirim: body.dikirim,
-					createBy: body.createBy,
-				}
-				await models.Notifikasi.create(payload)
-			}else if(body.jenis === 'BROADCAST'){
-				let payload = []
-				await Promise.all(body.idUser.map(async idUser => {
-					payload.push({
-						idNotifikasi: await createKSUID(),
-						idUser: idUser,
-						type: body.type,
-						judul: body.judul,
-						pesan: JSON.stringify(body.pesan),
-						params: body.params !== null ? JSON.stringify(body.params) : null,
-						dikirim: body.dikirim,
-						tautan: JSON.stringify(body.tautan),
-						createBy: body.createBy,
+			}else if(body.jenis === 'SETUJU'){
+				const datanotifikasi = await models.TemporaryData.findOne({
+					where: { idTemporaryData: body.idTemporaryData },
+				});
+				const { dataTemporary } = datanotifikasi
+				const data = JSON.parse(dataTemporary)
+				// console.log(data.payload.kirimdataUser.idBiodata);
+				await sequelizeInstance.transaction(async trx => {
+					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
+					await models.Anak.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
+					await models.Biodata.update(data.payload.kirimdataUser, { where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx })
+					await models.Anak.bulkCreate(data.payload.kirimdataAnak, { transaction: trx })
 				})
-				}))
-				// console.log(payload);
-				await models.Notifikasi.bulkCreate(payload)
-			}else if(body.jenis === 'DELETEBROADCAST'){
-				await models.Notifikasi.destroy({ where: { idNotifikasi: body.idNotifikasi } })
+			}else if(body.jenis === 'TIDAKSETUJU'){
+				await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
 			}
+			// else if(body.jenis === 'CREATE'){
+			// 	let payload = {
+			// 		idNotifikasi: await createKSUID(),
+			// 		idUser: body.idUser,
+			// 		type: body.type,
+			// 		judul: body.judul,
+			// 		pesan: JSON.stringify(body.pesan),
+			// 		params: body.params !== null ? JSON.stringify(body.params) : null,
+			// 		dikirim: body.dikirim,
+			// 		createBy: body.createBy,
+			// 	}
+			// 	await models.TemporaryData.create(payload)
+			// }else if(body.jenis === 'BROADCAST'){
+			// 	let payload = []
+			// 	await Promise.all(body.idUser.map(async idUser => {
+			// 		payload.push({
+			// 			idNotifikasi: await createKSUID(),
+			// 			idUser: idUser,
+			// 			type: body.type,
+			// 			judul: body.judul,
+			// 			pesan: JSON.stringify(body.pesan),
+			// 			params: body.params !== null ? JSON.stringify(body.params) : null,
+			// 			dikirim: body.dikirim,
+			// 			tautan: JSON.stringify(body.tautan),
+			// 			createBy: body.createBy,
+			// 	})
+			// 	}))
+			// 	// console.log(payload);
+			// 	await models.TemporaryData.bulkCreate(payload)
+			// }else if(body.jenis === 'DELETEBROADCAST'){
+			// 	await models.TemporaryData.destroy({ where: { idTemporaryData: body.idTemporaryData } })
+			// }
 			return OK(res)
 	  } catch (err) {
 			return NOT_FOUND(res, err.message)
@@ -785,6 +769,132 @@ function crudCMSSetting (models) {
 				)
 			})
 			return OK(res, mappingData);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getKomisarisWilayah (models) {
+  return async (req, res, next) => {
+		let { page = 1, limit = 10, sort = '', keyword } = req.query
+		let where = {}
+    try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ kodeKomisarisWilayah : { [Op.like]: `%${keyword}%` }},
+					{ namaKomisaris : { [Op.like]: `%${keyword}%` }},
+					{ '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			const mappingSortField = [
+				'namaKomisaris',
+				['wilayah', sequelize.literal('`WilayahPanjaitan.label`')],
+			]
+
+			const orders = buildOrderQuery(sort, mappingSortField)
+			
+			if(orders.length === 0){
+				orders.push(['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC'])
+			}
+
+			where = whereKey
+
+      const { count, rows: dataKomisarisWilayah } = await models.KomisarisWilayah.findAndCountAll({
+				where,
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					},
+				],
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+
+			const getResult = await Promise.all(dataKomisarisWilayah.map(str => {
+				return {
+					idKomisaris: str.idKomisaris,
+					kodeKomisarisWilayah: str.kodeKomisarisWilayah,
+					kodeWilayah: str.kodeWilayah,
+					namaWilayah: str.WilayahPanjaitan.label,
+					namaKomisaris: str.namaKomisaris,
+					daerah: str.daerah,
+				}
+			}))
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function crudKomisarisWilayah (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+		let where = {}
+		let kode = ''
+    try {
+			if(body.jenis == 'ADD'){
+				const data = await models.KomisarisWilayah.findOne({
+					where: { kodeWilayah: body.kode_wilayah },
+					attributes: ["kodeKomisarisWilayah"],
+					order: [
+						['kodeKomisarisWilayah', 'DESC'],
+					],
+					limit: 1,
+				});
+				if(body.kode_wilayah === '01') kode = 'JakPus.'; 
+				else if(body.kode_wilayah === '02') kode = 'JakUt.'; 
+				else if(body.kode_wilayah === '03') kode = 'JakBar.'; 
+				else if(body.kode_wilayah === '04') kode = 'JakSelA.'; 
+				else if(body.kode_wilayah === '05') kode = 'JakSelB.'; 
+				else if(body.kode_wilayah === '06') kode = 'JakTimA.'; 
+				else if(body.kode_wilayah === '07') kode = 'JakTimB.'; 
+				else if(body.kode_wilayah === '08') kode = 'Bks.'; 
+				else if(body.kode_wilayah === '09') kode = 'Tang.'; 
+				else if(body.kode_wilayah === '10') kode = 'Dpk.'; 
+				else if(body.kode_wilayah === '11') kode = 'BgrA.'; 
+				else if(body.kode_wilayah === '12') kode = 'BgrB.'; 
+				let text = data.kodeKomisarisWilayah.split('.')[1]
+
+				where = {
+					namaKomisaris : { [Op.like]: `%${body.nama_komisaris}%` }
+				}
+
+				const {count, rows} = await models.KomisarisWilayah.findAndCountAll({where});
+				if(count) return NOT_FOUND(res, 'data sudah di gunakan !')
+				kirimdata = {
+					kodeKomisarisWilayah: `${kode}${(parseInt(text.substr(1))+1).toString().padStart(3, '0')}`,
+					kodeWilayah: body.kode_wilayah,
+					namaKomisaris: body.nama_komisaris,
+					daerah: body.daerah,
+				}
+				await models.KomisarisWilayah.create(kirimdata)
+			}else if(body.jenis == 'EDIT'){
+				if(await models.KomisarisWilayah.findOne({where: {namaKomisaris: body.nama_komisaris, [Op.not]: [{idKomisaris: body.id_komisaris}]}})) return NOT_FOUND(res, 'Nama Komisaris sudah di gunakan !')
+				kirimdata = {
+					kodeWilayah: body.kode_wilayah,
+					namaKomisaris: body.nama_komisaris,
+					daerah: body.daerah,
+				}
+				await models.KomisarisWilayah.update(kirimdata, { where: { idKomisaris: body.id_komisaris } })
+			}else if(body.jenis == 'DELETE'){
+				// await models.KomisarisWilayah.update(kirimdata, { where: { idKomisaris: body.id_komisaris } })	
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -865,108 +975,6 @@ function crudBerkas (models) {
   }  
 }
 
-function getCardRFID (models) {
-  return async (req, res, next) => {
-		let { sort, page = 1, limit = 10, keyword } = req.query
-    let where = {}
-		let order = []
-    try {
-			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-			order = [
-				['createdAt', sort ? sort : 'ASC'],
-			]
-
-			const whereKey = keyword ? {
-				[Op.or]: [
-					{ rfid : { [Op.like]: `%${keyword}%` }},
-					{ '$User.nama$' : { [Op.like]: `%${keyword}%` }},
-				]
-			} : {}
-
-			where = whereKey
-
-			const { count, rows: dataKartu } = await models.DataKartu.findAndCountAll({
-				where,
-				include: [
-					{ 
-						model: models.User,
-						attributes: ['idUser', 'nama', 'email', 'consumerType'],
-						include: [
-							{ 
-								model: models.UserDetail,
-								attributes: ['nomorInduk'],
-							},
-						],
-					},
-				],
-				order,
-				limit: parseInt(limit),
-				offset: OFFSET,
-			});
-
-			const responseData = buildMysqlResponseWithPagination(
-				dataKartu.map(val => {
-					return {
-						idTabel: val.idTabel,
-						idUser: val.idUser ? val.idUser : '-',
-						consumerType: val.User ? val.User.consumerType : '-',
-						// nama: val.User ? `${val.User.nama} (${val.User.consumerType === 3 ? 'Guru' : 'Siswa - Siswi'})` : '-',
-						nama: val.User ? val.User.nama : '-',
-						email: val.User ? val.User.email : '-',
-						nomorInduk: val.User ? val.User.UserDetail.nomorInduk : '-',
-						rfid: val.rfid,
-						use: val.use,
-						status: val.status,
-					}
-				}),
-				{ limit, page, total: count }
-			)
-
-			return OK(res, responseData);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function crudCardRFID (models) {
-  return async (req, res, next) => {
-		let body = { ...req.body }
-		let where = {}
-    try {
-			if(body.jenis == 'EDIT'){
-				if(await models.DataKartu.findOne({where: {idUser: body.idUser, [Op.not]: [{rfid: body.rfid}]}})) return NOT_FOUND(res, 'User sudah di pilih !')
-				kirimdata = {
-					idUser: body.idUser,
-					use: 1,
-				}
-				await models.DataKartu.update(kirimdata, { where: { rfid: body.rfid } })
-			}else if(body.jenis == 'DELETE'){
-				await models.DataKartu.destroy({ where: { rfid: body.rfid } })	
-			}else if(body.jenis == 'STATUSRECORD'){
-				kirimdata = { 
-					idUser: null,
-					status: body.status,
-					use: 0,
-				}
-				await models.DataKartu.update(kirimdata, { where: { rfid: body.rfid } })
-			}else if(body.jenis == 'USERECORD'){
-				kirimdata = { 
-					idUser: null,
-					use: body.use,
-				}
-				await models.DataKartu.update(kirimdata, { where: { rfid: body.rfid } })
-			}else{
-				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
-			}
-
-			return OK(res);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
 function optionsMenu (models) {
   return async (req, res, next) => {
     let { id_role } = req.query
@@ -1027,172 +1035,81 @@ function optionsMenu (models) {
   }  
 }
 
-function optionsAgama (models) {
+function optionsAnak (models) {
   return async (req, res, next) => {
+		let { uid } = req.query
+		let where = {}
     try {
-      const dataAgama = await models.Agama.findAll();
-			return OK(res, dataAgama);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsHobi (models) {
-	return async (req, res, next) => {
-	  try {
-		const dataHobi = await models.Hobi.findAll();
-			  return OK(res, dataHobi);
-	  } catch (err) {
-			  return NOT_FOUND(res, err.message)
-	  }
-	}  
-}
-
-function optionsCitaCita (models) {
-	return async (req, res, next) => {
-	  try {
-		const dataCitaCita = await models.CitaCita.findAll();
-			  return OK(res, dataCitaCita);
-	  } catch (err) {
-			  return NOT_FOUND(res, err.message)
-	  }
-	}  
-}
-
-function optionsJenjangSekolah (models) {
-  return async (req, res, next) => {
-    try {
-      const dataJenjangSekolah = await models.JenjangSekolah.findAll();
-			return OK(res, dataJenjangSekolah);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsPendidikan (models) {
-  return async (req, res, next) => {
-    try {
-      const dataPendidikan = await models.Pendidikan.findAll();
-			return OK(res, dataPendidikan);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsPekerjaan (models) {
-  return async (req, res, next) => {
-    try {
-      const dataPekerjaan = await models.Pekerjaan.findAll();
-			return OK(res, dataPekerjaan);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsPenghasilan (models) {
-  return async (req, res, next) => {
-    try {
-      const dataPenghasilan = await models.Penghasilan.findAll();
-			return OK(res, dataPenghasilan);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsJabatan (models) {
-  return async (req, res, next) => {
-    try {
-      const dataJabatan = await models.Jabatan.findAll();
-			return OK(res, dataJabatan);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsMengajar (models) {
-  return async (req, res, next) => {
-    try {
-      const dataMengajar = await models.Mengajar.findAll();
-			return OK(res, dataMengajar);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsKelas (models) {
-  return async (req, res, next) => {
-		let { kondisi, walikelas } = req.query
-    try {
-			const dataKelas = await models.Kelas.findAll({where: {status: true}});
-			if(kondisi === 'Use'){
-				let result = []
-				await Promise.all(dataKelas.map(async str => {
-					const user = await models.UserDetail.findOne({where: {waliKelas: str.dataValues.kelas}});
-					if(user){
-						if(walikelas !== user.dataValues.waliKelas){
-							result.push({ ...str.dataValues, kelas: `${str.dataValues.kelas} (sudah di gunakan)`, disabled: true })
-						}else{
-							result.push(str.dataValues)
-						}
-					}else{
-						result.push(str.dataValues)
-					}
-				}))
-				return OK(res, _.orderBy(result, 'idKelas', 'ASC'));
+			const { userID, consumerType } = req.JWTDecoded
+			
+			console.log(userID, consumerType);
+			if(consumerType === 3){
+				where	= { idBiodata: userID }
+			}else{
+				where	= { idBiodata: uid }
 			}
 
-			return OK(res, dataKelas);
+      const dataAnak = await models.Anak.findAll({ where });
+			return OK(res, dataAnak);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
   }  
 }
 
-function optionsStatusOrangtua (models) {
+function optionsOmpu (models) {
   return async (req, res, next) => {
     try {
-      const dataStatusOrangtua = await models.StatusOrangtua.findAll();
-			return OK(res, dataStatusOrangtua);
+      const dataOmpu = await models.Ompu.findAll();
+			return OK(res, dataOmpu);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
   }  
 }
 
-function optionsStatusTempatTinggal (models) {
+function optionsKomisarisWilayah (models) {
   return async (req, res, next) => {
+    let { kodeWilayah } = req.query
+		let where = {}
     try {
-      const dataStatusTempatTinggal = await models.StatusTempatTinggal.findAll();
-			return OK(res, dataStatusTempatTinggal);
+			if(kodeWilayah){
+				where = { kodeWilayah }
+			}
+      const dataKomisarisWilayah = await models.KomisarisWilayah.findAll({
+				where,
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					}
+				],
+			});
+			return OK(res, dataKomisarisWilayah.map(str => {
+				return {
+					idKomisaris: str.idKomisaris,
+					kodeKomisarisWilayah: str.kodeKomisarisWilayah,
+					kodeWilayah: str.kodeWilayah,
+					namaWilayah: str.WilayahPanjaitan.label,
+					namaKomisaris: str.namaKomisaris,
+					daerah: str.daerah,
+				}
+			}));
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
   }  
 }
 
-function optionsJarakRumah (models) {
+function optionsWilayahPanjaitan (models) {
   return async (req, res, next) => {
     try {
-      const dataJarakRumah = await models.JarakRumah.findAll();
-			return OK(res, dataJarakRumah);
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function optionsTransportasi (models) {
-  return async (req, res, next) => {
-    try {
-      const dataTransportasi = await models.Transportasi.findAll();
-			return OK(res, dataTransportasi);
+      const dataWilayahPanjaitan = await models.WilayahPanjaitan.findAll();
+			return OK(res, await dataWilayahPanjaitan.map(val => {
+				return {
+					...val.dataValues,
+					lambang: `${BASE_URL}bahan/${val.dataValues.lambang}`
+				}
+			}));
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -1257,8 +1174,35 @@ function optionsWilayah2023 (models) {
 				order: [['kode', 'ASC']],
 				group: [sequelize.fn('LEFT', sequelize.col('kode'), whereChar)]
 			});
+			
+			let wilayahResult = [];
+			if(bagian === 'provinsi'){
+				await dataWilayah.map(val => {
+					if(val.kode === '31' || val.kode === '32' || val.kode === '36') {
+						wilayahResult.push(val);
+					}
+				})
+			}else if(bagian === 'kabkota'){
+				await dataWilayah.map(val => {
+					if(KodeWilayah === '31'){
+						if(val.kode !== '31.01') {
+							wilayahResult.push(val);
+						}
+					}else if(KodeWilayah === '32'){
+						if(val.kode === '32.01' || val.kode === '32.16' || val.kode === '32.71' || val.kode === '32.75' || val.kode === '32.76') {
+							wilayahResult.push(val);
+						}
+					}else if(KodeWilayah === '36'){
+						if(val.kode === '36.03' || val.kode === '36.71') {
+							wilayahResult.push(val);
+						}
+					}
+				})
+			}else{
+				wilayahResult = dataWilayah;
+			}
 
-			return OK(res, dataWilayah);
+			return OK(res, wilayahResult);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -1405,191 +1349,6 @@ function getUserBroadcast (models) {
 			return NOT_FOUND(res, err.message)
 	  }
 	}  
-}
-
-function getListExam (models) {
-  return async (req, res, next) => {
-		const { kelas } = req.query
-    try {
-			if(!kelas) return NOT_FOUND(res, 'param tidak ditemukan')
-      const dataExam = await models.JadwalExam.findAll({ where: { kelas: kelas, status: true } });
-			return OK(res, await Promise.all(dataExam.map(async val => {
-				const dataMapel = await models.Mengajar.findOne({ where: { kode: val.dataValues.mapel } });
-				const check = await models.AnswerExam.count({ where: { mapel: val.dataValues.mapel, kelas: kelas } });
-				return {
-					...val.dataValues,
-					mapel: dataMapel.label,
-					kondisi: check > 0,
-				}
-			})))
-    } catch (err) {
-			return NOT_FOUND(res, err.message)
-    }
-  }  
-}
-
-function getRFID (models) {
-	return async (req, res, next) => {
-		let { kode, absen, rfid } = req.query
-		try {
-			let payload;
-			if(kode === 'enroll'){
-				if(rfid === '') return OK(res, { kode: 0, pesan: "Silahkan scan New RFID!" })
-				const check = await models.DataKartu.count({ where: { rfid: rfid, status: true } })
-				if(!check){
-					payload = {
-						rfid: rfid,
-						use: 0,
-						status: 1,
-					}
-					await models.DataKartu.create(payload)
-					return OK(res, { kode: 1, pesan: "New RFID sudah diinputkan!" })
-				}else{
-					return OK(res, { kode: 2, pesan: "RFID sudah tersedia!" })
-				}
-			}else if(kode === 'access'){
-				if(rfid === '') return OK(res, { kode: 0, pesan: "Silahkan scan RFID!" })
-				const check = await models.DataKartu.findOne({ where: { rfid: rfid, use: true, status: true } })
-				if(check){
-					const dataSiswaSiswi = await models.User.findOne({
-						where: { consumerType: [3, 4], idUser: check.idUser },
-						attributes: ['idUser', 'nama', 'email'],
-					});
-					let nama = dataSiswaSiswi.nama.split(' ')
-					let namaFirst = nama[0];
-					let gabungNama = [];
-					for(let i = 1; i < nama.length; i++){
-						gabungNama.push(`${inisialuppercaseLetterFirst(nama[i])}${i !== nama.length - 1 ? '.' : ''}`)
-					}
-
-					let dateNow = dayjs().format("YYYY-MM-DD")
-					let waktuNow = dayjs().format("HH:mm:ss")
-					let pesan = ''
-					let pesanAbsen = ''
-					let totime = dayjs();
-					let interval_masuk = totime.diff(dayjs().hour(8).minute(0), "minute");
-					let interval_keluar = totime.diff(dayjs().hour(16).minute(0), "minute");
-					if(absen === 'masuk'){
-						if(waktuNow < "06:00:00") return OK(res, {
-							kode: 2,
-							pesan: 'Waktu Absen belum tersedia',
-							pesanAbsen: '',
-							data: ''
-						})
-						const count = await models.Absensi.count()
-						if(count === 0){ 
-							pesan = 'Berhasil Absen!'
-							pesanAbsen = waktuNow >= "06:00:00" && waktuNow <= "08:00:00" ? 'absen tidak telat' : 'absen telat'
-							payload = {
-								idUser: dataSiswaSiswi.idUser,
-								kategori: 'Masuk',
-								absenTime: new Date(),
-								absenTimeLate: waktuNow >= "06:00:00" && waktuNow <= "08:00:00" ? null : formatInterval(interval_masuk),
-								pesanAbsen,
-							}
-							await models.Absensi.create(payload)
-						}else{
-							const dataAbsen = await models.Absensi.findOne({ where: { idUser: dataSiswaSiswi.idUser, kategori: 'Masuk' }, order: [ ['idAbsen', 'DESC'] ] })			
-							let dateNow_masuk = dayjs(dataAbsen.absenTime).format("YYYY-MM-DD")
-							if(dateNow !== dateNow_masuk){
-								if(waktuNow >= "06:00:00" && waktuNow <= "08:00:00"){
-									pesan = 'Berhasil Absen!'
-									pesanAbsen = 'absen tidak telat'
-									payload = {
-										idUser: dataSiswaSiswi.idUser,
-										kategori: 'Masuk',
-										absenTime: new Date(),
-										absenTimeLate: null,
-										pesanAbsen,
-									}
-									await models.Absensi.create(payload)
-								}else if(waktuNow > "08:00:00" && waktuNow < "16:00:00"){
-									pesan = 'Berhasil Absen!'
-									pesanAbsen = 'absen telat'
-									payload = {
-										idUser: dataSiswaSiswi.idUser,
-										kategori: 'Masuk',
-										absenTime: new Date(),
-										absenTimeLate: formatInterval(interval_masuk),
-										pesanAbsen,
-									}
-									await models.Absensi.create(payload)
-								}
-							}else{
-								pesan = 'Sudah Absen!'
-							}
-						}
-					}else if(absen === 'keluar'){
-						if(waktuNow < "16:00:00") return OK(res, {
-							kode: 2,
-							pesan: 'Waktu Absen belum tersedia',
-							pesanAbsen: '',
-							data: ''
-						})
-						const count = await models.Absensi.count()
-						if(count === 0){ 
-							pesan = 'Berhasil Absen!'
-							pesanAbsen = waktuNow >= "16:00:00" && waktuNow <= "19:00:00" ? 'absen tidak telat' : 'absen telat'
-							payload = {
-								idUser: dataSiswaSiswi.idUser,
-								kategori: 'Keluar',
-								absenTime: new Date(),
-								absenTimeLate: waktuNow >= "16:00:00" && waktuNow <= "19:00:00" ? null : formatInterval(interval_keluar),
-								pesanAbsen,
-							}
-							await models.Absensi.create(payload)
-						}else{
-							const dataAbsen = await models.Absensi.findOne({ where: { idUser: dataSiswaSiswi.idUser, kategori: 'Keluar' }, order: [ ['idAbsen', 'DESC'] ] })			
-							let dateNow_keluar = dayjs(dataAbsen.absenTime).format("YYYY-MM-DD")
-							if(dateNow !== dateNow_keluar){
-								if(waktuNow >= "16:00:00" && waktuNow <= "19:00:00"){
-									pesan = 'Berhasil Absen!'
-									pesanAbsen = 'absen tidak lembur'
-									payload = {
-										idUser: dataSiswaSiswi.idUser,
-										kategori: 'Keluar',
-										absenTime: new Date(),
-										absenTimeLate: null,
-										pesanAbsen,
-									}
-									await models.Absensi.create(payload)
-								}else if(waktuNow > "19:00:00" && waktuNow <= "23:59:00"){
-									pesan = 'Berhasil Absen!'
-									pesanAbsen = 'absen lembur'
-									payload = {
-										idUser: dataSiswaSiswi.idUser,
-										kategori: 'Keluar',
-										absenTime: new Date(),
-										absenTimeLate: formatInterval(interval_keluar),
-										pesanAbsen,
-									}
-									await models.Absensi.create(payload)
-								}
-							}else{
-								pesan = 'Sudah Absen!'
-							}
-						}
-					}
-
-					return OK(res, {
-						kode: 1,
-						pesan,
-						pesanAbsen,
-						data: {
-							idUser: dataSiswaSiswi.idUser,
-							nama: `${UpperFirstLetter(namaFirst)}${gabungNama.length ? ` ${gabungNama.join('')}` : ''}`,
-							email: dataSiswaSiswi.email,
-							rfid: rfid,
-						}
-					})
-				}else{
-					return OK(res, { kode: 2, pesan: "Kartu belum digunakan!" })
-				}
-			}
-		} catch (err) {
-			return NOT_FOUND(res, err.message)
-		}
-	}
 }
 
 // tabel m_wilayah
@@ -1932,31 +1691,19 @@ module.exports = {
   crudNotifikasi,
   getCMSSetting,
   crudCMSSetting,
+  getKomisarisWilayah,
+  crudKomisarisWilayah,
   getBerkas,
   crudBerkas,
-  getCardRFID,
-  crudCardRFID,
   optionsMenu,
-  optionsAgama,
-  optionsHobi,
-  optionsCitaCita,
-  optionsJenjangSekolah,
-  optionsPendidikan,
-  optionsPekerjaan,
-  optionsPenghasilan,
-  optionsJabatan,
-  optionsMengajar,
-  optionsKelas,
-  optionsStatusOrangtua,
-  optionsStatusTempatTinggal,
-  optionsJarakRumah,
-  optionsTransportasi,
+  optionsAnak,
+  optionsOmpu,
+  optionsKomisarisWilayah,
+  optionsWilayahPanjaitan,
   optionsWilayah,
   optionsWilayah2023,
   optionsBerkas,
   getUserBroadcast,
-  getListExam,
-  getRFID,
   getWilayah,
   crudWilayah,
   getWilayah2023,

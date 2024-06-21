@@ -19,31 +19,19 @@ const {
   crudNotifikasi,
   getCMSSetting,
   crudCMSSetting,
+  getKomisarisWilayah,
+  crudKomisarisWilayah,
   getBerkas,
   crudBerkas,
-  getCardRFID,
-  crudCardRFID,
   optionsMenu,
-  optionsAgama,
-  optionsHobi,
-  optionsCitaCita,
-  optionsJenjangSekolah,
-  optionsPendidikan,
-  optionsPekerjaan,
-  optionsPenghasilan,
-  optionsJabatan,
-  optionsMengajar,
-  optionsKelas,
-  optionsStatusOrangtua,
-  optionsStatusTempatTinggal,
-  optionsJarakRumah,
-  optionsTransportasi,
+  optionsAnak,
+  optionsOmpu,
+  optionsKomisarisWilayah,
+  optionsWilayahPanjaitan,
   optionsWilayah,
   optionsWilayah2023,
   optionsBerkas,
   getUserBroadcast,
-  getListExam,
-  getRFID,
   getWilayah,
   crudWilayah,
   getWilayah2023,
@@ -60,24 +48,13 @@ module.exports = models => {
   route.route('/encryptPass').get(verifyToken, getEncrypt())
   route.route('/decryptPass').get(verifyToken, getDecrypt())
   route.route('/optionsMenu').get(verifyToken, optionsMenu(models))
-  route.route('/optionsAgama').get(optionsAgama(models))
-  route.route('/optionsHobi').get(optionsHobi(models))
-  route.route('/optionsCitaCita').get(optionsCitaCita(models))
-  route.route('/optionsJenjangSekolah').get(optionsJenjangSekolah(models))
-  route.route('/optionsPendidikan').get(optionsPendidikan(models))
-  route.route('/optionsPekerjaan').get(optionsPekerjaan(models))
-  route.route('/optionsPenghasilan').get(optionsPenghasilan(models))
-  route.route('/optionsJabatan').get(optionsJabatan(models))
-  route.route('/optionsMengajar').get(optionsMengajar(models))
-  route.route('/optionsKelas').get(optionsKelas(models))
-  route.route('/optionsStatusOrangtua').get(optionsStatusOrangtua(models))
-  route.route('/optionsStatusTempatTinggal').get(optionsStatusTempatTinggal(models))
-  route.route('/optionsJarakRumah').get(optionsJarakRumah(models))
-  route.route('/optionsTransportasi').get(optionsTransportasi(models))
+  route.route('/optionsAnak').get(verifyToken, optionsAnak(models))
+  route.route('/optionsOmpu').get(optionsOmpu(models))
+  route.route('/optionsKomisarisWilayah').get(optionsKomisarisWilayah(models))
+  route.route('/optionsWilayahPanjaitan').get(optionsWilayahPanjaitan(models))
   route.route('/optionsWilayah').get(optionsWilayah(models))
   route.route('/optionsWilayah2023').get(optionsWilayah2023(models))
   route.route('/optionsBerkas').get(optionsBerkas(models))
-  route.route('/listExam').get(verifyToken, getListExam(models))
   
   route.route('/updateFile').post(uploadFile, updateFile(models))
   route.route('/updateBerkas').post(uploadBerkas, updateBerkas(models))
@@ -106,14 +83,13 @@ module.exports = models => {
   route.route('/cmssetting')
     .get(getCMSSetting(models))
     .put(crudCMSSetting(models))
+  route.route('/KomisarisWilayah')
+    .get(verifyToken, getKomisarisWilayah(models))
+    .post(crudKomisarisWilayah(models))
   route.route('/Berkas')
     .get(verifyToken, getBerkas(models))
     .post(crudBerkas(models))
-  route.route('/data-rfid')
-    .get(verifyToken, getCardRFID(models))
-    .post(crudCardRFID(models))
-  
-  route.route('/rfid').get(getRFID(models))
+
   route.route('/wilayah')
     .get(getWilayah(models))
     .post(crudWilayah(models))

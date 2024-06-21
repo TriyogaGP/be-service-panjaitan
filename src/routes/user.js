@@ -36,19 +36,19 @@ module.exports = models => {
   route.route('/biodata/:uid')
     .get(verifyToken, getBiodatabyUid(models))
   
-  // route.route('/template/:roleID')
-  //   .get(downloadTemplate(models))
-  // route.route('/importexcel')
-  //   .post(uploadFile, importExcel(models))
-  // route.route('/exportexcel')
-  //   .get(verifyToken, exportExcel(models))
+  route.route('/template/:wilayah')
+    .get(downloadTemplate(models))
+  route.route('/importexcel')
+    .post(uploadFile, importExcel(models))
+  route.route('/exportexcel')
+    .get(verifyToken, exportExcel(models))
   // route.route('/pdfcreate/:uid')
   //   .get(verifyToken, pdfCreate(models))
   // route.route('/pdfcreate-raport/:uid')
   //   .get(verifyToken, pdfCreateRaport(models))
 
-  // route.route('/testing')
-  //   .post(testing(models))
+  route.route('/testing')
+    .get(testing(models))
   
   return route;
 }
