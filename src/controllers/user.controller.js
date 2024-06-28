@@ -804,11 +804,21 @@ function postBiodata (models) {
 
 function getIuran (models) {
 	return async (req, res, next) => {
-		let { komisaris_wilayah, tahun } = req.query
+		let { komisaris_wilayah, tahun, keyword } = req.query
+		let where = {}
 		try {
 			// let tahun = dayjs().format('YYYY')
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ namaLengkap : { [Op.like]: `%${keyword}%` }},
+					{ nik : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = { ...whereKey, komisarisWilayah: komisaris_wilayah }
+
 			const dataBiodata = await models.Biodata.findAll({
-				where: { komisarisWilayah: komisaris_wilayah },
+				where,
 				attributes: ['idBiodata', 'nik', 'namaLengkap', 'komisarisWilayah'],
 				include: [
 					{ 
@@ -1903,7 +1913,7 @@ function exportExcel (models) {
 							anak: val.Anaks.length ? _.join(anak, '\n') : '-',
 						}
 					}))
-		
+					
 					let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
 					let nama_wilayah = wilayah_panjaitan.dataValues.label
 					let worksheetBiodata = workbook.addWorksheet(`${nama_wilayah}`);

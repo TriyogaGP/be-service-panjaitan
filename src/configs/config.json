@@ -1,10 +1,10 @@
 {
   "3306": {
     "development": {
-      "username": "panjaitan_user",
-      "password": "Pass@word123",
-      "database": "panjaitan",
-      "host": "152.42.193.204",
+      "username": "userrootwin",
+      "password": "userrootwin",
+      "database": "db_panjaitan",
+      "host": "localhost",
       "port": "3306",
       "dialect": "mysql"
     },
