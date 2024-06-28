@@ -6,6 +6,9 @@ const {
 	UNAUTHORIZED
 } = require('@triyogagp/backend-common/utils/response.utils');
 const {
+	request
+} = require('@triyogagp/backend-common/utils/request.utils');
+const {
 	encrypt,
 	decrypt,
 	setNum,
@@ -278,7 +281,7 @@ function getBiodata (models) {
 				[Op.or]: [
 					{ namaLengkap : { [Op.like]: `%${keyword}%` }},
 					{ nik : { [Op.like]: `%${keyword}%` }},
-					// { '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
+					{ '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
 					consumerType !== 3 && { '$KomisarisWilayah.nama_komisaris$' : { [Op.like]: `%${keyword}%` }},
 					{ '$Ompu.label$' : { [Op.like]: `%${keyword}%` }},
 					// { statusSuami : { [Op.like]: `%${keyword}%` }},
@@ -474,9 +477,38 @@ function postBiodata (models) {
 					})
 				})
 
+				let dataIuran = []
+				let tahun = dayjs().format('YYYY')
+				for (let index = 2024; index <= Number(tahun); index++) {
+					dataIuran.push({
+						tahun: String(index),
+						iuran: {
+							januari: 0,
+							februari: 0,
+							maret: 0,
+							april: 0,
+							mei: 0,
+							juni: 0,
+							juli: 0,
+							agustus: 0,
+							september: 0,
+							oktober: 0,
+							november: 0,
+							desember: 0
+						}
+					})
+				}
 
 				await sequelizeInstance.transaction(async trx => {
+					let kirimdataIuran = {
+						idIuran: makeRandom(10),
+						idBiodata: body.idBiodata,
+						komisarisWilayah: body.komisarisWilayah,
+						iuran: JSON.stringify(dataIuran),
+						totalIuran: 0
+					}
 					await models.Biodata.create(kirimdataUser, { transaction: trx })
+					await models.Iuran.create(kirimdataIuran, { transaction: trx })
 					await models.Anak.bulkCreate(kirimdataAnak, { transaction: trx })
 				})
 			}else if(body.jenis == 'EDIT'){
@@ -643,6 +675,7 @@ function postBiodata (models) {
 							});
 						}
 						await models.Biodata.destroy({ where: { idBiodata: body.idBiodata } }, { transaction: trx });
+						await models.Iuran.destroy({ where: { idBiodata: body.idBiodata } }, { transaction: trx });
 						await models.Anak.destroy({ where: { idBiodata: body.idBiodata } }, { transaction: trx });
 					}
 				})
@@ -703,6 +736,7 @@ function postBiodata (models) {
 								});
 							}
 							await models.Biodata.destroy({ where: { idBiodata: str } }, { transaction: trx });
+							await models.Iuran.destroy({ where: { idBiodata: str } }, { transaction: trx });
 							await models.Anak.destroy({ where: { idBiodata: str } }, { transaction: trx });
 						}))
 					}
@@ -760,6 +794,67 @@ function postBiodata (models) {
 			}else{
 				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
 			}
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getIuran (models) {
+	return async (req, res, next) => {
+		let { komisaris_wilayah, tahun } = req.query
+		try {
+			// let tahun = dayjs().format('YYYY')
+			const dataBiodata = await models.Biodata.findAll({
+				where: { komisarisWilayah: komisaris_wilayah },
+				attributes: ['idBiodata', 'nik', 'namaLengkap', 'komisarisWilayah'],
+				include: [
+					{ 
+						attributes: ['idIuran', 'iuran', 'totalIuran'],
+						where: { komisarisWilayah: komisaris_wilayah },
+						model: models.Iuran,
+					},
+				],
+				order: [['createdAt', 'ASC']],
+			});
+
+			let result = await Promise.all(dataBiodata.map(str => {
+				let iuran = JSON.parse(str.Iuran.iuran)
+				let dataIuran = iuran.filter(val => val.tahun === tahun)
+				// console.log(dataIuran);
+				return {
+					idBiodata: str.idBiodata,
+					idIuran: str.Iuran.idIuran,
+					nik: str.nik,
+					namaLengkap: str.namaLengkap,
+					komisarisWilayah: str.komisarisWilayah,
+					iuran: dataIuran.length ? dataIuran[0].iuran : null,
+					totalIuran: str.Iuran.totalIuran,
+				}
+			}))
+
+			return OK(res, result)
+		} catch (err) {
+			return NOT_FOUND(res, err.message)
+		}
+	}
+}
+
+function postIuran (models) {
+  return async (req, res, next) => {
+		let body = req.body
+    try {
+			// const { userID } = req.JWTDecoded
+			const dataIuran = await models.Iuran.findOne({ where: { idIuran: body.idIuran, idBiodata: body.idBiodata } })
+			let hasil = JSON.parse(dataIuran.iuran)
+			let dataiuran = hasil.filter(str => str.tahun !== body.tahun)
+			let obj = dataiuran.length ? [ ...dataiuran, body.iuran ] : [ body.iuran ]
+			let kirimdataIuran = {
+				iuran: JSON.stringify(obj),
+			}
+			await models.Iuran.update(kirimdataIuran, { where: { idIuran: body.idIuran, idBiodata: body.idBiodata } })
 
 			return OK(res);
     } catch (err) {
@@ -1317,7 +1412,38 @@ function importExcel (models) {
 										})
 									})
 									
+									let dataIuran = []
+									let tahun = dayjs().format('YYYY')
+									for (let index = 2024; index <= Number(tahun); index++) {
+										dataIuran.push({
+											tahun: String(index),
+											iuran: {
+												januari: 0,
+												februari: 0,
+												maret: 0,
+												april: 0,
+												mei: 0,
+												juni: 0,
+												juli: 0,
+												agustus: 0,
+												september: 0,
+												oktober: 0,
+												november: 0,
+												desember: 0
+											}
+										})
+									}
+
+									let kirimdataIuran = {
+										idIuran: makeRandom(10),
+										idBiodata: str.idBiodata,
+										komisarisWilayah: str.komisarisWilayah,
+										iuran: JSON.stringify(dataIuran),
+										totalIuran: 0
+									}
+
 									await models.Biodata.create(kirimdataUser)
+									await models.Iuran.create(kirimdataIuran)
 									await models.Anak.bulkCreate(kirimdataAnak)
 									// await sequelizeInstance.transaction(async trx => {
 									// 	await models.Biodata.create(kirimdataUser, { transaction: trx })
@@ -2465,6 +2591,7 @@ function pdfCreateRaport (models) {
 
 function testing (models) {
 	return async (req, res, next) => {
+		let { suhu, ph, tds } = req.query
 		try {
 			// let textInput = "JAWA BARAT"
 			// let regex = /[\!\@\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]/g
@@ -2498,32 +2625,28 @@ function testing (models) {
 
 			/////////////////////////////////////////////////////////
 
-			const columns = [
-				{ header: "No. Urut PSO Sundut", key: "nourut", width: 25 },
-				{ header: "Goarni Ama/Ina Panggoaran", key: "nama", width: 30 },
-				{ header: "Lanakhon/Tanggungan", key: "tanggungan", width: 70 },
-				{ header: "Alamat", key: "alamat", width: 40 },
-			]
-
-			const data = {
-				"text": ": wkwkwkw",
-				"studentData": [
-					{ name: "Muskan", RollNo: 101, Grade: "A+", Class: 10 },
-					{ name: "John", RollNo: 102, Grade: "A", Class: 10 },
-					{ name: "Emily", RollNo: 103, Grade: "B+", Class: 10 },
-					{ name: "Michael", RollNo: 104, Grade: "A", Class: 10 },
-					{ name: "Sophia", RollNo: 105, Grade: "A+", Class: 10 },
-					{ name: "James", RollNo: 106, Grade: "B", Class: 10 },
-					{ name: "Emma", RollNo: 107, Grade: "A+", Class: 10 }
-				],
-			}
-
-			// Object.keys(data).forEach(sectionKey => {
-			// 		console.log(sectionKey);
+			// let date = new Date();
+			// const data = await request({
+			// 	url: `https://api.thingspeak.com/update.json`,
+			// 	method: 'POST',
+			// 	headers: {
+			// 		"Content-Type": "application/json"
+			// 	},
+			// 	data: {
+			// 		"api_key": "WXL31YFDLPAHXETO",
+			// 		"created_at": date,
+			// 		"field1": suhu,
+			// 		"field2": ph,
+			// 		"field3": tds,
+			// 		"latitude": "",
+			// 		"longitude": "",
+			// 		"status": "Please check in!"
+			// 	}
 			// })
 
-			for (const [key, value] of Object.entries(data)) {
-				console.log(`${key}: ${value}`);
+			let tahun = dayjs().format('YYYY')
+			for (let index = 2024; index <= Number(tahun); index++) {
+				console.log(index);
 			}
 			return OK(res)
 		} catch (err) {
@@ -2540,6 +2663,8 @@ module.exports = {
   getBiodata,
   getBiodatabyUid,
   postBiodata,
+	getIuran,
+	postIuran,
   downloadTemplate,
   importExcel,
   exportExcel,

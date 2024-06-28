@@ -7,6 +7,8 @@ const {
   getBiodata,
   getBiodatabyUid,
   postBiodata,
+  getIuran,
+  postIuran,
   downloadTemplate,
   importExcel,
   exportExcel,
@@ -35,7 +37,11 @@ module.exports = models => {
     .post(verifyToken, postBiodata(models))
   route.route('/biodata/:uid')
     .get(verifyToken, getBiodatabyUid(models))
-  
+    
+  route.route('/iuran')
+    .get(verifyToken, getIuran(models))
+    .post(verifyToken, postIuran(models))
+
   route.route('/template/:wilayah')
     .get(downloadTemplate(models))
   route.route('/importexcel')

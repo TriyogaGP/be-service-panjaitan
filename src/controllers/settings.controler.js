@@ -669,10 +669,11 @@ function crudNotifikasi (models) {
 				const datanotifikasi = await models.TemporaryData.findOne({
 					where: { idTemporaryData: body.idTemporaryData },
 				});
-				const { dataTemporary } = datanotifikasi
+				const { dataTemporary, jenis } = datanotifikasi
 				const data = JSON.parse(dataTemporary)
 				// console.log(data.payload.kirimdataUser.idBiodata);
 				await sequelizeInstance.transaction(async trx => {
+					if(jenis === 'Delete') await models.Iuran.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
 					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
 					await models.Anak.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
 					await models.Biodata.update(data.payload.kirimdataUser, { where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx })
