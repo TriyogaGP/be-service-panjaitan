@@ -649,7 +649,7 @@ function postBiodata (models) {
 							dataTemporary: JSON.stringify({
 								title: `Request Delete Record`,
 								message: `Permintaan penghapusan data oleh <strong>${nama}</strong> atas nama <strong>${namaLengkap}</strong> dan nik <strong>${nik}</strong>`,
-								payload: { idBiodata: body.idBiodata, namaLengkap, nik },
+								payload: { kirimdataUser: { idBiodata: body.idBiodata, namaLengkap, nik } },
 								reason: body.reason,
 							}),
 							imageTemporary: null,

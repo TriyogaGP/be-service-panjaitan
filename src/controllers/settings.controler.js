@@ -671,13 +671,16 @@ function crudNotifikasi (models) {
 				});
 				const { dataTemporary, jenis } = datanotifikasi
 				const data = JSON.parse(dataTemporary)
-				// console.log(data.payload.kirimdataUser.idBiodata);
 				await sequelizeInstance.transaction(async trx => {
-					if(jenis === 'Delete') await models.Iuran.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
-					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
-					await models.Anak.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
-					await models.Biodata.update(data.payload.kirimdataUser, { where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx })
-					await models.Anak.bulkCreate(data.payload.kirimdataAnak, { transaction: trx })
+					if(jenis === 'Delete') {
+						await models.Iuran.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
+						await models.Biodata.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
+					}else if(jenis === 'Update') {
+						await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
+						await models.Anak.destroy({ where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx });
+						await models.Biodata.update(data.payload.kirimdataUser, { where: { idBiodata: data.payload.kirimdataUser.idBiodata } }, { transaction: trx })
+						await models.Anak.bulkCreate(data.payload.kirimdataAnak, { transaction: trx })
+					}
 				})
 			}else if(body.jenis === 'TIDAKSETUJU'){
 				await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
