@@ -139,6 +139,94 @@ async function _wilayah2023Cetak(params) {
 	return wilayahResult
 }
 
+async function _iuranAllData(params) {
+	const { models, tahun, komisaris_wilayah } = params
+	let dataiuran = []
+	const dataBiodata = await models.Biodata.findAll({
+		where: { komisarisWilayah: komisaris_wilayah },
+		attributes: ['idBiodata', 'nik', 'namaLengkap', 'komisarisWilayah'],
+		include: [
+			{ 
+				attributes: ['idIuran', 'iuran', 'totalIuran'],
+				where: { komisarisWilayah: komisaris_wilayah },
+				model: models.Iuran,
+			},
+		],
+		order: [['createdAt', 'ASC']],
+	});
+
+	let result = await Promise.all(dataBiodata.map(str => {
+		let iuran = JSON.parse(str.Iuran.iuran)
+		let dataIuran = iuran.filter(val => val.tahun === tahun)
+		// console.log(dataIuran);
+		return {
+			idBiodata: str.idBiodata,
+			idIuran: str.Iuran.idIuran,
+			nik: str.nik,
+			namaLengkap: str.namaLengkap,
+			komisarisWilayah: str.komisarisWilayah,
+			iuran: dataIuran.length ? dataIuran[0].iuran : null,
+			totalIuran: str.Iuran.totalIuran,
+		}
+	}))
+
+	const totalKeseluruhanIuran = result.reduce((acc, curr) => {
+		return {
+			totalIuran: Number(acc.totalIuran) + Number(curr.totalIuran),
+		};
+	}, {
+		totalIuran: 0,
+	});
+
+	result.map(str => {
+		dataiuran.push(str.iuran);
+	})
+	const countObj = dataiuran.reduce((acc, curr) => {
+		return {
+			januari: acc.januari + curr.januari,
+			februari: acc.februari + curr.februari,
+			maret: acc.maret + curr.maret,
+			april: acc.april + curr.april,
+			mei: acc.mei + curr.mei,
+			juni: acc.juni + curr.juni,
+			juli: acc.juli + curr.juli,
+			agustus: acc.agustus + curr.agustus,
+			september: acc.september + curr.september,
+			oktober: acc.oktober + curr.oktober,
+			november: acc.november + curr.november,
+			desember: acc.desember + curr.desember,
+			total: acc.total + curr.total,
+		};
+	}, {
+		januari: 0,
+		februari: 0,
+		maret: 0,
+		april: 0,
+		mei: 0,
+		juni: 0,
+		juli: 0,
+		agustus: 0,
+		september: 0,
+		oktober: 0,
+		november: 0,
+		desember: 0,
+		total: 0,
+	});
+
+	return {
+		totalKeseluruhanIuran: totalKeseluruhanIuran.totalIuran,
+		totalKeseluruhanIuranPerTahun: countObj.total,
+		dataIuran: {
+			idBiodata: '',
+			idIuran: '',
+			nik: '',
+			namaLengkap: '',
+			komisarisWilayah: '',
+			iuran: countObj,
+		}
+	}
+}
+
 module.exports = {
 	_allOption,
 	_anakOption,
@@ -147,4 +235,5 @@ module.exports = {
 	_komisariswilayahOption,
 	_wilayah2023Option,
 	_wilayah2023Cetak,
+	_iuranAllData,
 }

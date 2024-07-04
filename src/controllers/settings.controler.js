@@ -827,6 +827,7 @@ function getKomisarisWilayah (models) {
 					namaWilayah: str.WilayahPanjaitan.label,
 					namaKomisaris: str.namaKomisaris,
 					daerah: str.daerah,
+					statusKomisaris: str.statusKomisaris,
 				}
 			}))
 
@@ -848,6 +849,7 @@ function crudKomisarisWilayah (models) {
 		let where = {}
 		let kode = ''
     try {
+			let kirimdata
 			if(body.jenis == 'ADD'){
 				const data = await models.KomisarisWilayah.findOne({
 					where: { kodeWilayah: body.kode_wilayah },
@@ -893,7 +895,12 @@ function crudKomisarisWilayah (models) {
 				}
 				await models.KomisarisWilayah.update(kirimdata, { where: { idKomisaris: body.id_komisaris } })
 			}else if(body.jenis == 'DELETE'){
-				// await models.KomisarisWilayah.update(kirimdata, { where: { idKomisaris: body.id_komisaris } })	
+				await models.KomisarisWilayah.destroy(kirimdata, { where: { idKomisaris: body.id_komisaris } })	
+			}else if(body.jenis == 'STATUSRECORD'){
+				kirimdata = { 
+					statusKomisaris: body.status, 
+				}
+				await models.KomisarisWilayah.update(kirimdata, { where: { idKomisaris: body.id_komisaris } })
 			}else{
 				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
 			}
@@ -1081,7 +1088,7 @@ function optionsKomisarisWilayah (models) {
 				where = { kodeWilayah }
 			}
       const dataKomisarisWilayah = await models.KomisarisWilayah.findAll({
-				where,
+				where: { ...where, statusKomisaris: true },
 				include: [
 					{ 
 						model: models.WilayahPanjaitan,

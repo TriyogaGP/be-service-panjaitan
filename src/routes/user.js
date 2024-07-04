@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const {
   getDashboard,
+  getDashboardTwo,
   getAdmin,
   getAdminbyUid,
   postAdmin,
@@ -9,6 +10,8 @@ const {
   postBiodata,
   getIuran,
   postIuran,
+  optionsWilayahPanjaitan,
+  optionsKomisarisWilayah,
   downloadTemplate,
   importExcel,
   exportExcel,
@@ -25,6 +28,8 @@ module.exports = models => {
 
   route.route('/dashboard')
     .get(verifyToken, getDashboard(models))
+  route.route('/dashboardTwo')
+    .get(verifyToken, getDashboardTwo(models))
   
   route.route('/admin')
     .get(verifyToken, getAdmin(models))
@@ -41,6 +46,12 @@ module.exports = models => {
   route.route('/iuran')
     .get(verifyToken, getIuran(models))
     .post(verifyToken, postIuran(models))
+
+  route.route('/optionsWilayahPanjaitan')
+    .get(verifyToken, optionsWilayahPanjaitan(models))
+
+  route.route('/optionsKomisarisWilayah')
+    .get(verifyToken, optionsKomisarisWilayah(models))
 
   route.route('/template/:wilayah')
     .get(downloadTemplate(models))

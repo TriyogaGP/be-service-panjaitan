@@ -38,6 +38,7 @@ const {
 	_komisariswilayahOption,
 	_wilayah2023Option,
 	_wilayah2023Cetak,
+	_iuranAllData,
 } = require('../controllers/helper.service')
 const { 
 	_buildResponseAdmin,
@@ -82,6 +83,28 @@ function getDashboard (models) {
 				return obj;
 			}))
 			return OK(res, consumerType === 1 || consumerType === 2 ? responseData : responseData.filter(val => val.kode === wilayah));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getDashboardTwo (models) {
+  return async (req, res, next) => {
+    try {
+			const { consumerType, wilayah } = req.JWTDecoded
+			const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: wilayah } })
+			const responseData = await Promise.all(dataKomisarisWilayah.map(async val => {
+				const count = await models.Biodata.count({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
+				let obj = {
+					kodeKomisarisWilayah: val.kodeKomisarisWilayah,
+					kodeWilayah: val.kodeWilayah,
+					namaKomisaris: val.namaKomisaris,
+					jml: count,
+				}
+				return obj;
+			}))
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -329,7 +352,7 @@ function getBiodata (models) {
 					idBiodata: val.idBiodata,
 					nik: val.nik,
 					namaLengkap: val.namaLengkap,
-					tempat: val.tempat,
+					tempatSuami: val.tempatSuami,
 					tanggalLahirSuami: val.tanggalLahirSuami,
 					alamat: val.alamat,
 					provinsi: val.provinsi ? await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' }) : null,
@@ -340,6 +363,7 @@ function getBiodata (models) {
 					pekerjaanSuami: val.pekerjaanSuami,
 					telp: val.telp,
 					namaIstri: val.namaIstri,
+					tempatIstri: val.tempatIstri,
 					tanggalLahirIstri: val.tanggalLahirIstri,
 					pekerjaanIstri: val.pekerjaanIstri,
 					anak: await _anakOption({ models, idBiodata: val.idBiodata }),
@@ -386,7 +410,8 @@ function getBiodatabyUid (models) {
 				idBiodata: dataBiodata.idBiodata,
 					nik: dataBiodata.nik,
 					namaLengkap: dataBiodata.namaLengkap,
-					tempat: dataBiodata.tempat,
+					tempatSuami: dataBiodata.tempatSuami,
+					tempatSuami: dataBiodata.tempatSuami,
 					tanggalLahirSuami: dataBiodata.tanggalLahirSuami,
 					alamat: dataBiodata.alamat,
 					provinsi: dataBiodata.provinsi ? await _wilayah2023Option({ models, kode: dataBiodata.provinsi, bagian: 'provinsi' }) : null,
@@ -397,6 +422,7 @@ function getBiodatabyUid (models) {
 					pekerjaanSuami: dataBiodata.pekerjaanSuami,
 					telp: dataBiodata.telp,
 					namaIstri: dataBiodata.namaIstri,
+					tempatIstri: dataBiodata.tempatIstri,
 					tanggalLahirIstri: dataBiodata.tanggalLahirIstri,
 					pekerjaanIstri: dataBiodata.pekerjaanIstri,
 					anak: await _anakOption({ models, idBiodata: dataBiodata.idBiodata }),
@@ -442,7 +468,7 @@ function postBiodata (models) {
 					idBiodata: body.idBiodata,
 					nik,
 					namaLengkap: body.namaLengkap,
-					tempat: body.tempat,
+					tempatSuami: body.tempatSuami,
 					tanggalLahirSuami: body.tanggalLahirSuami,
 					alamat: body.alamat,
 					provinsi: body.provinsi,
@@ -453,8 +479,9 @@ function postBiodata (models) {
 					pekerjaanSuami: body.pekerjaanSuami,
 					telp: body.telp,
 					namaIstri: body.namaIstri,
-					pekerjaanIstri: body.pekerjaanIstri,
+					tempatIstri: body.tempatIstri,
 					tanggalLahirIstri: body.tanggalLahirIstri,
+					pekerjaanIstri: body.pekerjaanIstri,
 					jabatanPengurus: body.jabatanPengurus,
 					wilayah: body.wilayah,
 					komisarisWilayah: body.komisarisWilayah,
@@ -494,7 +521,8 @@ function postBiodata (models) {
 							september: 0,
 							oktober: 0,
 							november: 0,
-							desember: 0
+							desember: 0,
+							total: 0,
 						}
 					})
 				}
@@ -540,7 +568,7 @@ function postBiodata (models) {
 					idBiodata: body.idBiodata,
 					nik,
 					namaLengkap: body.namaLengkap,
-					tempat: body.tempat,
+					tempatSuami: body.tempatSuami,
 					tanggalLahirSuami: body.tanggalLahirSuami,
 					alamat: body.alamat,
 					provinsi: body.provinsi,
@@ -551,8 +579,9 @@ function postBiodata (models) {
 					pekerjaanSuami: body.pekerjaanSuami,
 					telp: body.telp,
 					namaIstri: body.namaIstri,
-					pekerjaanIstri: body.pekerjaanIstri,
+					tempatIstri: body.tempatIstri,
 					tanggalLahirIstri: body.tanggalLahirIstri,
+					pekerjaanIstri: body.pekerjaanIstri,
 					jabatanPengurus: body.jabatanPengurus,
 					wilayah: body.wilayah,
 					komisarisWilayah: body.komisarisWilayah,
@@ -773,6 +802,7 @@ function postBiodata (models) {
 				if(body.untuk === 'SUAMI'){
 					kirimdataUser = { 
 						statusSuami: body.statusMeninggal,
+						pekerjaanSuami: null,
 						tanggalWafatSuami: body.statusMeninggal === 'Meninggal' ? new Date() : null,
 						updateBy: userID
 					}
@@ -780,6 +810,7 @@ function postBiodata (models) {
 				}else if(body.untuk === 'ISTRI'){
 					kirimdataUser = { 
 						statusIstri: body.statusMeninggal, 
+						pekerjaanIstri: null,
 						tanggalWafatIstri: body.statusMeninggal === 'Meninggal' ? new Date() : null,
 						updateBy: userID
 					}
@@ -845,7 +876,14 @@ function getIuran (models) {
 				}
 			}))
 
-			return OK(res, result)
+			const dataTotal = await _iuranAllData({ models, tahun, komisaris_wilayah })
+
+			// console.log(dataTotal);
+			return OK(res, {
+				result: result.length ? [...result, dataTotal.dataIuran] : [],
+				totalKeseluruhanIuran: dataTotal.totalKeseluruhanIuran,
+				totalKeseluruhanIuranPerTahun: dataTotal.totalKeseluruhanIuranPerTahun,
+			})
 		} catch (err) {
 			return NOT_FOUND(res, err.message)
 		}
@@ -861,12 +899,113 @@ function postIuran (models) {
 			let hasil = JSON.parse(dataIuran.iuran)
 			let dataiuran = hasil.filter(str => str.tahun !== body.tahun)
 			let obj = dataiuran.length ? [ ...dataiuran, body.iuran ] : [ body.iuran ]
+			const totalIuran = obj.reduce((acc, curr) => {
+				const { iuran } = curr
+				return {
+					total: acc.total + iuran.total,
+				};
+			}, {
+				total: 0,
+			});
 			let kirimdataIuran = {
 				iuran: JSON.stringify(obj),
+				totalIuran: totalIuran.total,
 			}
 			await models.Iuran.update(kirimdataIuran, { where: { idIuran: body.idIuran, idBiodata: body.idBiodata } })
 
 			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function optionsWilayahPanjaitan (models) {
+  return async (req, res, next) => {
+		let { keyword } = req.query
+    try {
+			let totalKeseluruhanIuranWilayah = 0
+			const where = keyword ? { label : { [Op.like]: `%${keyword}%` }} : {}
+      const dataWilayahPanjaitan = await models.WilayahPanjaitan.findAll({
+				where,
+			});
+
+			const result = await Promise.all(dataWilayahPanjaitan.map(async val => {
+				const dataKomisarisWilayah = await models.KomisarisWilayah.findAll({
+					attributes: ['kodeKomisarisWilayah'],
+					where: { kodeWilayah: val.dataValues.kode, statusKomisaris: true },
+				});
+				let dataSearch = dataKomisarisWilayah.map(str => str.kodeKomisarisWilayah)
+				const dataIuran = await models.Iuran.findAll({
+					attributes: [
+						[sequelize.fn('SUM', sequelize.col('total_iuran')), 'totalKeseluruhan'],
+					],
+					where: { komisarisWilayah: dataSearch },
+					raw: true,
+				});
+				let { totalKeseluruhan } = dataIuran[0]
+				totalKeseluruhanIuranWilayah += totalKeseluruhan
+				return {
+					...val.dataValues,
+					lambang: `${BASE_URL}bahan/${val.dataValues.lambang}`, 
+					totalIuran: totalKeseluruhan ? totalKeseluruhan : 0
+				}
+			}))
+			
+			return OK(res, { result, totalKeseluruhanIuranWilayah });
+    } catch (err) {
+			console.log(err);
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function optionsKomisarisWilayah (models) {
+  return async (req, res, next) => {
+    let { kodeWilayah, keyword } = req.query
+		let where = {}
+    try {
+			if(kodeWilayah){
+				where = { kodeWilayah }
+			}
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ kodeKomisarisWilayah : { [Op.like]: `%${keyword}%` }},
+					{ namaKomisaris : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+      const dataKomisarisWilayah = await models.KomisarisWilayah.findAll({
+				where: { ...where, ...whereKey, statusKomisaris: true },
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					}
+				],
+			});
+
+			const result = await Promise.all(dataKomisarisWilayah.map(async str => {
+				const dataIuran = await models.Iuran.findAll({
+					attributes: [
+						[sequelize.fn('SUM', sequelize.col('total_iuran')), 'totalKeseluruhan'],
+					],
+					where: { komisarisWilayah: str.dataValues.kodeKomisarisWilayah },
+					raw: true,
+				});
+				let { totalKeseluruhan } = dataIuran[0]
+				return {
+					idKomisaris: str.idKomisaris,
+					kodeKomisarisWilayah: str.kodeKomisarisWilayah,
+					kodeWilayah: str.kodeWilayah,
+					namaWilayah: str.WilayahPanjaitan.label,
+					namaKomisaris: str.namaKomisaris,
+					daerah: str.daerah,
+					totalIuran: totalKeseluruhan ? totalKeseluruhan : 0
+				}
+			}))
+
+			return OK(res, result);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -894,7 +1033,7 @@ function downloadTemplate (models) {
 				{ header: "triggerbiodata", key: "triggerBiodata", width: 20 },
 				{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
 				{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-				{ header: "TEMPAT", key: "tempat", width: 25 },
+				{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 25 },
 				{ header: "ALAMAT", key: "alamat", width: 45 },
 				{ header: "PROVINSI", key: "provinsi", width: 20 },
 				{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
@@ -904,6 +1043,7 @@ function downloadTemplate (models) {
 				{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
 				{ header: "TELEPON", key: "telp", width: 15 },
 				{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+				{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 25 },
 				{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
 				{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
 				{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 25 },
@@ -923,7 +1063,7 @@ function downloadTemplate (models) {
 				triggerBiodata: '1', 
 				namaSuami: 'nama Suami', 
 				tanggalLahirSuami: new Date(),
-				tempat: 'Bogor', 
+				tempatSuami: 'Bogor',
 				alamat: 'Bogor', 
 				provinsi: '32', 
 				kabKota: '32.01', 
@@ -933,6 +1073,7 @@ function downloadTemplate (models) {
 				pekerjaanSuami: 'Karyawan Swasta', 
 				telp: '123456789', 
 				namaIstri: 'nama Istri', 
+				tempatIstri: 'Bogor',
 				tanggalLahirIstri: new Date(),
 				pekerjaanIstri: 'Guru', 
 				jabatanPengurus: 'Ketua', 
@@ -1295,7 +1436,7 @@ function importExcel (models) {
 						namaSuami: row[1], 
 						tanggalLahirSuami: convertDate(row[2]),
 						// tanggalLahirSuami: dayjs(`${tglSuami[2]}-${tglSuami[1]}-${tglSuami[0]}`).format('YYYY-MM-DD'),
-						tempat: row[3], 
+						tempatSuami: row[3], 
 						alamat: row[4], 
 						provinsi: row[5], 
 						kabKota: row[6], 
@@ -1305,16 +1446,17 @@ function importExcel (models) {
 						pekerjaanSuami: row[10], 
 						telp: row[11], 
 						namaIstri: row[12], 
-						tanggalLahirIstri: convertDate(row[13]),
+						tempatIstri: row[13], 
+						tanggalLahirIstri: convertDate(row[14]),
 						// tanggalLahirIstri: dayjs(`${tglIstri[2]}-${tglIstri[1]}-${tglIstri[0]}`).format('YYYY-MM-DD'),
-						pekerjaanIstri: row[14], 
-						jabatanPengurus: row[15], 
-						wilayah: row[16], 
-						komisarisWilayah: row[17], 
-						ompu: row[18], 
-						generasi: row[19], 
-						statusSuami: row[20], 
-						statusIstri: row[21],
+						pekerjaanIstri: row[15], 
+						jabatanPengurus: row[16], 
+						wilayah: row[17], 
+						komisarisWilayah: row[18], 
+						ompu: row[19], 
+						generasi: row[20], 
+						statusSuami: row[21], 
+						statusIstri: row[22],
 					};
 					jsonBiodata.push(data);
 				});
@@ -1387,7 +1529,7 @@ function importExcel (models) {
 										idBiodata: str.idBiodata,
 										nik,
 										namaLengkap: str.namaSuami,
-										tempat: str.tempat,
+										tempatSuami: str.tempatSuami,
 										tanggalLahirSuami: str.tanggalLahirSuami,
 										alamat: str.alamat,
 										provinsi: str.provinsi,
@@ -1398,8 +1540,9 @@ function importExcel (models) {
 										pekerjaanSuami: str.pekerjaanSuami,
 										telp: str.telp,
 										namaIstri: str.namaIstri,
-										pekerjaanIstri: str.pekerjaanIstri,
+										tempatIstri: str.tempatIstri,
 										tanggalLahirIstri: str.tanggalLahirIstri,
+										pekerjaanIstri: str.pekerjaanIstri,
 										jabatanPengurus: str.jabatanPengurus === null ? '-' : str.jabatanPengurus,
 										wilayah: str.wilayah,
 										komisarisWilayah: str.komisarisWilayah,
@@ -1439,7 +1582,8 @@ function importExcel (models) {
 												september: 0,
 												oktober: 0,
 												november: 0,
-												desember: 0
+												desember: 0,
+												total: 0,
 											}
 										})
 									}
@@ -1484,7 +1628,7 @@ function importExcel (models) {
 							{ header: "triggerbiodata", key: "triggerBiodata", width: 20 },
 							{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
 							{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-							{ header: "TEMPAT", key: "tempat", width: 25 },
+							{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 25 },
 							{ header: "ALAMAT", key: "alamat", width: 45 },
 							{ header: "PROVINSI", key: "provinsi", width: 20 },
 							{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
@@ -1494,6 +1638,7 @@ function importExcel (models) {
 							{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
 							{ header: "TELEPON", key: "telp", width: 15 },
 							{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+							{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 25 },
 							{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
 							{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
 							{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 25 },
@@ -1532,12 +1677,13 @@ function importExcel (models) {
 									row.getCell(14).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center'};
-									row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center'};
 									row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
 								}
 							});
 						});
@@ -1889,7 +2035,7 @@ function exportExcel (models) {
 							idBiodata: val.idBiodata,
 							nik: val.nik,
 							namaSuami: val.namaLengkap,
-							tempat: val.tempat,
+							tempatSuami: val.tempatSuami,
 							tanggalLahirSuami: val.tanggalLahirSuami,
 							pekerjaanSuami: val.pekerjaanSuami,
 							telp: val.telp,
@@ -1900,6 +2046,7 @@ function exportExcel (models) {
 							kelurahan: val.kelurahan ? kelurahan.dataValues.nama : kelurahan.dataValues.kode,
 							kodePos: val.kodePos,
 							namaIstri: val.namaIstri,
+							tempatIstri: val.tempatIstri,
 							tanggalLahirIstri: val.tanggalLahirIstri,
 							pekerjaanIstri: val.pekerjaanIstri,						
 							jabatanPengurus: val.jabatanPengurus,
@@ -1924,7 +2071,7 @@ function exportExcel (models) {
 						{ header: "NIK", key: "nik", width: 20 },
 						{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
 						{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-						{ header: "TEMPAT", key: "tempat", width: 20 },
+						{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 20 },
 						{ header: "ALAMAT", key: "alamat", width: 30 },
 						{ header: "PROVINSI", key: "provinsi", width: 20 },
 						{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
@@ -1934,6 +2081,7 @@ function exportExcel (models) {
 						{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
 						{ header: "TELEPON", key: "telp", width: 20 },
 						{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+						{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 20 },
 						{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 27 },
 						{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
 						{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 30 },
@@ -1974,15 +2122,16 @@ function exportExcel (models) {
 								row.getCell(14).alignment = { vertical: 'middle', horizontal: 'left' };
 								row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
 								row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(17).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(19).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(20).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(18).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+								row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(20).alignment = { vertical: 'middle', horizontal: 'left' };
+								row.getCell(21).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
 								row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
 								row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
 								row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(25).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+								row.getCell(25).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(26).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
 							 }
 						});
 					});
@@ -2045,7 +2194,7 @@ function exportExcel (models) {
 							idBiodata: val.idBiodata,
 							nik: val.nik,
 							namaSuami: val.namaLengkap,
-							tempat: val.tempat,
+							tempatSuami: val.tempatSuami,
 							tanggalLahirSuami: val.tanggalLahirSuami,
 							pekerjaanSuami: val.pekerjaanSuami,
 							telp: val.telp,
@@ -2056,6 +2205,7 @@ function exportExcel (models) {
 							kelurahan: val.kelurahan ? kelurahan.dataValues.nama : kelurahan.dataValues.kode,
 							kodePos: val.kodePos,
 							namaIstri: val.namaIstri,
+							tempatIstri: val.tempatIstri,
 							tanggalLahirIstri: val.tanggalLahirIstri,
 							pekerjaanIstri: val.pekerjaanIstri,						
 							jabatanPengurus: val.jabatanPengurus,
@@ -2080,7 +2230,7 @@ function exportExcel (models) {
 						{ header: "NIK", key: "nik", width: 20 },
 						{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
 						{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-						{ header: "TEMPAT", key: "tempat", width: 20 },
+						{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 20 },
 						{ header: "ALAMAT", key: "alamat", width: 30 },
 						{ header: "PROVINSI", key: "provinsi", width: 20 },
 						{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
@@ -2090,6 +2240,7 @@ function exportExcel (models) {
 						{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
 						{ header: "TELEPON", key: "telp", width: 20 },
 						{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+						{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 20 },
 						{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 27 },
 						{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
 						{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 30 },
@@ -2130,15 +2281,16 @@ function exportExcel (models) {
 								row.getCell(14).alignment = { vertical: 'middle', horizontal: 'left' };
 								row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
 								row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(17).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(19).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(20).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(18).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+								row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(20).alignment = { vertical: 'middle', horizontal: 'left' };
+								row.getCell(21).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
 								row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
 								row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
 								row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(25).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+								row.getCell(25).alignment = { vertical: 'middle', horizontal: 'center' };
+								row.getCell(26).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
 							 }
 						});
 					});
@@ -2667,6 +2819,7 @@ function testing (models) {
 
 module.exports = {
   getDashboard,
+  getDashboardTwo,
   getAdmin,
   getAdminbyUid,
   postAdmin,
@@ -2675,6 +2828,8 @@ module.exports = {
   postBiodata,
 	getIuran,
 	postIuran,
+	optionsWilayahPanjaitan,
+	optionsKomisarisWilayah,
   downloadTemplate,
   importExcel,
   exportExcel,
