@@ -93,7 +93,7 @@ function getDashboardTwo (models) {
   return async (req, res, next) => {
     try {
 			const { consumerType, wilayah } = req.JWTDecoded
-			const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: wilayah } })
+			const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: wilayah, statusKomisaris: true } })
 			const responseData = await Promise.all(dataKomisarisWilayah.map(async val => {
 				const count = await models.Biodata.count({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
 				let obj = {
@@ -1249,7 +1249,7 @@ function downloadTemplate (models) {
 				{ header: "NAMA KOMISARIS", key: "namaKomisaris", width: 50 },
 				{ header: "DAERAH", key: "daerah", width: 50 }
 			];
-			let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
+			let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { statusKomisaris: true }, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
 			if(wilayah === '00'){
 				worksheetKomisarisWilayah.addRows(KomisarisWilayah);
 			}else{
@@ -1802,7 +1802,7 @@ function importExcel (models) {
 							{ header: "NAMA KOMISARIS", key: "namaKomisaris", width: 50 },
 							{ header: "DAERAH", key: "daerah", width: 50 }
 						];
-						let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
+						let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { statusKomisaris: true }, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
 						if(body.wilayah === '00'){
 							worksheetKomisarisWilayah.addRows(KomisarisWilayah);
 						}else{
@@ -2312,7 +2312,8 @@ function exportExcel (models) {
 				let workbook = new excel.Workbook();
 				const dataKomisaris = await models.KomisarisWilayah.findAll({
 					where: {
-						kodeWilayah: wilayah
+						kodeWilayah: wilayah,
+						statusKomisaris: true
 					},
 					order: [['kodeKomisarisWilayah', 'ASC']],
 				});
