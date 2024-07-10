@@ -492,9 +492,9 @@ function postBiodata (models) {
 					ompu: body.ompu,
 					generasi: body.generasi,
 					statusSuami: body.statusSuami,
-					tanggalWafatSuami: body.tanggalWafatSuami,
+					tanggalWafatSuami: body.tanggalWafatSuami !== 'NaN-aN-aN' ? body.tanggalWafatSuami : null,
 					statusIstri: body.statusIstri,
-					tanggalWafatIstri: body.tanggalWafatIstri,
+					tanggalWafatIstri: body.tanggalWafatIstri !== 'NaN-aN-aN' ? body.tanggalWafatIstri : null,
 					statusBiodata: 1,
 					createBy: userID,
 				}
@@ -594,7 +594,9 @@ function postBiodata (models) {
 					ompu: body.ompu,
 					generasi: body.generasi,
 					statusSuami: body.statusSuami,
+					tanggalWafatSuami: body.tanggalWafatSuami !== 'NaN-aN-aN' ? body.tanggalWafatSuami : null,
 					statusIstri: body.statusIstri,
+					tanggalWafatIstri: body.tanggalWafatIstri !== 'NaN-aN-aN' ? body.tanggalWafatIstri : null,
 					statusBiodata: 1,
 					updateBy: userID,
 				}
@@ -812,7 +814,7 @@ function postBiodata (models) {
 						tanggalLahirSuami: '',
 						pekerjaanSuami: '',
 						telp : '',
-						tanggalWafatSuami: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat : null,
+						tanggalWafatSuami: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat ? body.tanggal_wafat : null : null,
 						updateBy: userID
 					}
 					await models.Biodata.update(kirimdataUser, { where: { idBiodata: body.idStatus } })
@@ -823,14 +825,14 @@ function postBiodata (models) {
 						tanggalLahirIstri: '',
 						pekerjaanIstri: null,
 						telpIstri: null,
-						tanggalWafatIstri: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat : null,
+						tanggalWafatIstri: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat ? body.tanggal_wafat : null : null,
 						updateBy: userID
 					}
 					await models.Biodata.update(kirimdataUser, { where: { idBiodata: body.idStatus } })
 				}else if(body.untuk === 'TANGGUNGAN'){
 					kirimdataUser = { 
 						statusAnak: body.statusMeninggal, 
-						tanggalWafatAnak: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat : null,
+						tanggalWafatAnak: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat ? body.tanggal_wafat : null : null,
 					}
 					await models.Anak.update(kirimdataUser, { where: { idAnak: body.idStatus } })
 				}
@@ -1537,19 +1539,19 @@ function importExcel (models) {
 										idBiodata: str.idBiodata,
 										nik,
 										namaLengkap: str.namaSuami,
-										tempatSuami: str.tempatSuami,
-										tanggalLahirSuami: str.tanggalLahirSuami,
+										tempatSuami: str.tempatSuami ? str.tempatSuami : '',
+										tanggalLahirSuami: str.tanggalLahirSuami !== '1970-01-01' ? str.tanggalLahirSuami : '0000-00-00',
 										alamat: str.alamat,
 										provinsi: str.provinsi,
 										kabKota: str.kabKota,
 										kecamatan: str.kecamatan,
 										kelurahan: str.kelurahan,
 										kodePos: str.kodePos,
-										pekerjaanSuami: str.pekerjaanSuami,
-										telp: str.telp,
+										pekerjaanSuami: str.pekerjaanSuami ? str.pekerjaanSuami : '',
+										telp: str.telp ? str.telp : '',
 										namaIstri: str.namaIstri,
 										tempatIstri: str.tempatIstri,
-										tanggalLahirIstri: str.tanggalLahirIstri,
+										tanggalLahirIstri: str.tanggalLahirIstri !== '1970-01-01' ? str.tanggalLahirIstri : '0000-00-00',
 										pekerjaanIstri: str.pekerjaanIstri,
 										telpIstri: str.telpIstri,
 										jabatanPengurus: str.jabatanPengurus === null ? '-' : str.jabatanPengurus,
@@ -1558,7 +1560,9 @@ function importExcel (models) {
 										ompu: str.ompu,
 										generasi: str.generasi,
 										statusSuami: uppercaseLetterFirst(str.statusSuami),
+										tanggalWafatSuami: null,
 										statusIstri: uppercaseLetterFirst(str.statusIstri),
+										tanggalWafatIstri: null,
 										statusBiodata: 1,
 										createBy: body.createupdateBy,
 									}
