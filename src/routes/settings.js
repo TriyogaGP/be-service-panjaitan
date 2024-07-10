@@ -21,6 +21,8 @@ const {
   crudCMSSetting,
   getKomisarisWilayah,
   crudKomisarisWilayah,
+  getWilayahPanjaitan,
+  crudWilayahPanjaitan,
   getBerkas,
   crudBerkas,
   optionsMenu,
@@ -86,6 +88,9 @@ module.exports = models => {
   route.route('/KomisarisWilayah')
     .get(verifyToken, getKomisarisWilayah(models))
     .post(crudKomisarisWilayah(models))
+  route.route('/WilayahPanjaitan')
+    .get(verifyToken, getWilayahPanjaitan(models))
+    .post(crudWilayahPanjaitan(models))
   route.route('/Berkas')
     .get(verifyToken, getBerkas(models))
     .post(crudBerkas(models))

@@ -912,6 +912,112 @@ function crudKomisarisWilayah (models) {
   }  
 }
 
+
+function getWilayahPanjaitan (models) {
+  return async (req, res, next) => {
+		let { page = 1, limit = 10, sort = '', keyword } = req.query
+		let where = {}
+    try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ kode : { [Op.like]: `%${keyword}%` }},
+					{ label : { [Op.like]: `%${keyword}%` }},
+					{ namaKetuaWilayah : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			const mappingSortField = ['label', 'namaKetuaWilayah']
+
+			const orders = buildOrderQuery(sort, mappingSortField)
+			
+			if(orders.length === 0){
+				orders.push(['kode', 'ASC'])
+			}
+
+			where = whereKey
+
+      const { count, rows: dataWilayahPanjaitan } = await models.WilayahPanjaitan.findAndCountAll({
+				where,
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+
+			const getResult = await Promise.all(dataWilayahPanjaitan.map(str => {
+				return {
+					id: str.id,
+					kode: str.kode,
+					label: str.label,
+					namaKetuaWilayah: str.namaKetuaWilayah,
+					statusWilayah: str.statusWilayah,
+				}
+			}))
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function crudWilayahPanjaitan (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+		let where = {}
+		let kode = ''
+    try {
+			let kirimdata
+			if(body.jenis == 'ADD'){
+				const data = await models.WilayahPanjaitan.findOne({
+					attributes: ["kode"],
+					order: [
+						['kode', 'DESC'],
+					],
+					limit: 1,
+				});
+				let kode;
+				if(data) {
+					let text = data.kode
+					kode = `${(parseInt(text.substr(1))).toString().padStart(2, '0')}`
+				}else{
+					kode = `01`
+				}
+				kirimdata = {
+					kode,
+					label: body.label,
+					namaKetuaWilayah: body.nama_ketua_wilayah,
+				}
+				await models.WilayahPanjaitan.create(kirimdata)
+			}else if(body.jenis == 'EDIT'){
+				if(await models.WilayahPanjaitan.findOne({where: {label: body.label, [Op.not]: [{id: body.id}]}})) return NOT_FOUND(res, 'Nama Wilayah sudah di gunakan !')
+				kirimdata = {
+					label: body.label,
+					namaKetuaWilayah: body.nama_ketua_wilayah,
+				}
+				await models.WilayahPanjaitan.update(kirimdata, { where: { id: body.id } })
+			}else if(body.jenis == 'STATUSRECORD'){
+				kirimdata = { 
+					statusWilayah: body.status, 
+				}
+				await models.WilayahPanjaitan.update(kirimdata, { where: { id: body.id } })
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 function getBerkas (models) {
   return async (req, res, next) => {
 		let { page = 1, limit = 10, keyword } = req.query
@@ -1704,6 +1810,8 @@ module.exports = {
   crudCMSSetting,
   getKomisarisWilayah,
   crudKomisarisWilayah,
+  getWilayahPanjaitan,
+  crudWilayahPanjaitan,
   getBerkas,
   crudBerkas,
   optionsMenu,

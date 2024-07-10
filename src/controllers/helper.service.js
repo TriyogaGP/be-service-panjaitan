@@ -36,7 +36,7 @@ async function _anakOption(params) {
 
 async function _wilayahpanjaitanOption(params) {
 	const { models, kode } = params
-	const wilayahpanjaitan = await models.WilayahPanjaitan.findOne({ where: { kode }, attributes: ['kode', 'label', 'lambang'] })
+	const wilayahpanjaitan = await models.WilayahPanjaitan.findOne({ where: { kode, statusWilayah: true }, attributes: ['kode', 'label', 'lambang', 'namaKetuaWilayah'] })
 	return wilayahpanjaitan
 }
 
@@ -48,7 +48,7 @@ async function _ompuOption(params) {
 
 async function _komisariswilayahOption(params) {
 	const { models, kodeKomisarisWilayah } = params
-	const komisarisWilayah = await models.KomisarisWilayah.findOne({ where: { kodeKomisarisWilayah } })
+	const komisarisWilayah = await models.KomisarisWilayah.findOne({ where: { kodeKomisarisWilayah, statusKomisaris: true } })
 	return komisarisWilayah
 }
 
