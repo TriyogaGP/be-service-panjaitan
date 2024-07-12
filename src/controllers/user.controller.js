@@ -492,9 +492,9 @@ function postBiodata (models) {
 					ompu: body.ompu,
 					generasi: body.generasi,
 					statusSuami: body.statusSuami,
-					tanggalWafatSuami: body.tanggalWafatSuami !== 'NaN-aN-aN' ? body.tanggalWafatSuami : null,
+					tanggalWafatSuami: body.tanggalWafatSuami,
 					statusIstri: body.statusIstri,
-					tanggalWafatIstri: body.tanggalWafatIstri !== 'NaN-aN-aN' ? body.tanggalWafatIstri : null,
+					tanggalWafatIstri: body.tanggalWafatIstri,
 					statusBiodata: 1,
 					createBy: userID,
 				}
@@ -569,6 +569,8 @@ function postBiodata (models) {
 					}
 				}
 
+				console.log(body.tanggalLahirSuami);
+
 				kirimdataUser = {
 					idBiodata: body.idBiodata,
 					nik,
@@ -594,9 +596,9 @@ function postBiodata (models) {
 					ompu: body.ompu,
 					generasi: body.generasi,
 					statusSuami: body.statusSuami,
-					tanggalWafatSuami: body.tanggalWafatSuami !== 'NaN-aN-aN' ? body.tanggalWafatSuami : null,
+					tanggalWafatSuami: body.tanggalWafatSuami,
 					statusIstri: body.statusIstri,
-					tanggalWafatIstri: body.tanggalWafatIstri !== 'NaN-aN-aN' ? body.tanggalWafatIstri : null,
+					tanggalWafatIstri: body.tanggalWafatIstri,
 					statusBiodata: 1,
 					updateBy: userID,
 				}
@@ -811,10 +813,10 @@ function postBiodata (models) {
 					kirimdataUser = { 
 						statusSuami: body.statusMeninggal,
 						tempatSuami: '',
-						tanggalLahirSuami: '',
+						tanggalLahirSuami: null,
 						pekerjaanSuami: '',
 						telp : '',
-						tanggalWafatSuami: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat ? body.tanggal_wafat : null : null,
+						tanggalWafatSuami: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat : null,
 						updateBy: userID
 					}
 					await models.Biodata.update(kirimdataUser, { where: { idBiodata: body.idStatus } })
@@ -822,17 +824,17 @@ function postBiodata (models) {
 					kirimdataUser = { 
 						statusIstri: body.statusMeninggal, 
 						tempatIstri: null,
-						tanggalLahirIstri: '',
+						tanggalLahirIstri: null,
 						pekerjaanIstri: null,
 						telpIstri: null,
-						tanggalWafatIstri: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat ? body.tanggal_wafat : null : null,
+						tanggalWafatIstri: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat : null,
 						updateBy: userID
 					}
 					await models.Biodata.update(kirimdataUser, { where: { idBiodata: body.idStatus } })
 				}else if(body.untuk === 'TANGGUNGAN'){
 					kirimdataUser = { 
 						statusAnak: body.statusMeninggal, 
-						tanggalWafatAnak: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat ? body.tanggal_wafat : null : null,
+						tanggalWafatAnak: body.statusMeninggal === 'Meninggal' ? body.tanggal_wafat : null,
 					}
 					await models.Anak.update(kirimdataUser, { where: { idAnak: body.idStatus } })
 				}
@@ -1450,7 +1452,8 @@ function importExcel (models) {
 						idBiodata: await createKSUID(),
 						triggerBiodata: String(row[0]), 
 						namaSuami: row[1], 
-						tanggalLahirSuami: convertDate(row[2]),
+						tanggalLahirSuami: row[2],
+						// tanggalLahirSuami: convertDate(row[2]),
 						// tanggalLahirSuami: dayjs(`${tglSuami[2]}-${tglSuami[1]}-${tglSuami[0]}`).format('YYYY-MM-DD'),
 						tempatSuami: row[3], 
 						alamat: row[4], 
@@ -1463,7 +1466,8 @@ function importExcel (models) {
 						telp: row[11], 
 						namaIstri: row[12], 
 						tempatIstri: row[13], 
-						tanggalLahirIstri: convertDate(row[14]),
+						tanggalLahirIstri: row[14],
+						// tanggalLahirIstri: convertDate(row[14]),
 						// tanggalLahirIstri: dayjs(`${tglIstri[2]}-${tglIstri[1]}-${tglIstri[0]}`).format('YYYY-MM-DD'),
 						pekerjaanIstri: row[15], 
 						telpIstri: row[16], 
@@ -1475,6 +1479,7 @@ function importExcel (models) {
 						statusSuami: row[22], 
 						statusIstri: row[23],
 					};
+					console.log(row[2], row[14]);
 					jsonBiodata.push(data);
 				});
 
@@ -1540,7 +1545,7 @@ function importExcel (models) {
 										nik,
 										namaLengkap: str.namaSuami,
 										tempatSuami: str.tempatSuami ? str.tempatSuami : '',
-										tanggalLahirSuami: str.tanggalLahirSuami !== '1970-01-01' ? str.tanggalLahirSuami : '0000-00-00',
+										tanggalLahirSuami: str.tanggalLahirSuami,
 										alamat: str.alamat,
 										provinsi: str.provinsi,
 										kabKota: str.kabKota,
@@ -1551,7 +1556,7 @@ function importExcel (models) {
 										telp: str.telp ? str.telp : '',
 										namaIstri: str.namaIstri,
 										tempatIstri: str.tempatIstri,
-										tanggalLahirIstri: str.tanggalLahirIstri !== '1970-01-01' ? str.tanggalLahirIstri : '0000-00-00',
+										tanggalLahirIstri: str.tanggalLahirIstri,
 										pekerjaanIstri: str.pekerjaanIstri,
 										telpIstri: str.telpIstri,
 										jabatanPengurus: str.jabatanPengurus === null ? '-' : str.jabatanPengurus,
@@ -2049,7 +2054,7 @@ function exportExcel (models) {
 							nik: val.nik,
 							namaSuami: val.namaLengkap,
 							tempatSuami: val.tempatSuami ? val.tempatSuami : '-',
-							tanggalLahirSuami: val.tanggalLahirSuami !== '0000-00-00' ? dateconvert(val.tanggalLahirSuami) : '-',
+							tanggalLahirSuami: val.tanggalLahirSuami ? dateconvert(val.tanggalLahirSuami) : '-',
 							pekerjaanSuami: val.pekerjaanSuami ? val.pekerjaanSuami : '-',
 							telp: val.telp ? val.telp : '-',
 							alamat: val.alamat,
@@ -2060,7 +2065,7 @@ function exportExcel (models) {
 							kodePos: val.kodePos,
 							namaIstri: val.namaIstri,
 							tempatIstri: val.tempatIstri ? val.tempatIstri : '-',
-							tanggalLahirIstri: val.tanggalLahirIstri !== '0000-00-00' ? dateconvert(val.tanggalLahirIstri) : '-',
+							tanggalLahirIstri: val.tanggalLahirIstri ? dateconvert(val.tanggalLahirIstri) : '-',
 							pekerjaanIstri: val.pekerjaanIstri ? val.pekerjaanIstri : '-',						
 							telpIstri: val.telpIstri ? val.telpIstri : '-',
 							jabatanPengurus: val.jabatanPengurus,
@@ -2217,7 +2222,7 @@ function exportExcel (models) {
 							nik: val.nik,
 							namaSuami: val.namaLengkap,
 							tempatSuami: val.tempatSuami ? val.tempatSuami : '-',
-							tanggalLahirSuami: val.tanggalLahirSuami !== '0000-00-00' ? dateconvert(val.tanggalLahirSuami) : '-',
+							tanggalLahirSuami: val.tanggalLahirSuami ? dateconvert(val.tanggalLahirSuami) : '-',
 							pekerjaanSuami: val.pekerjaanSuami ? val.pekerjaanSuami : '-',
 							telp: val.telp ? val.telp : '-',
 							alamat: val.alamat,
@@ -2228,7 +2233,7 @@ function exportExcel (models) {
 							kodePos: val.kodePos,
 							namaIstri: val.namaIstri,
 							tempatIstri: val.tempatIstri ? val.tempatIstri : '-',
-							tanggalLahirIstri: val.tanggalLahirIstri !== '0000-00-00' ? dateconvert(val.tanggalLahirIstri) : '-',
+							tanggalLahirIstri: val.tanggalLahirIstri ? dateconvert(val.tanggalLahirIstri) : '-',
 							pekerjaanIstri: val.pekerjaanIstri ? val.pekerjaanIstri : '-',						
 							telpIstri: val.telpIstri ? val.telpIstri : '-',
 							jabatanPengurus: val.jabatanPengurus,
