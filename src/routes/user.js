@@ -10,6 +10,14 @@ const {
   postBiodata,
   getIuran,
   postIuran,
+  getDataMeninggal,
+  postDataMeninggal,
+  getDataMenikah,
+  postDataMenikah,
+  getPenanggungJawab,
+  postPenanggungJawab,
+  getTugas,
+  postTugas,
   optionsWilayahPanjaitan,
   optionsKomisarisWilayah,
   downloadTemplate,
@@ -46,6 +54,22 @@ module.exports = models => {
   route.route('/iuran')
     .get(verifyToken, getIuran(models))
     .post(verifyToken, postIuran(models))
+ 
+  route.route('/data-meninggal')
+    .get(verifyToken, getDataMeninggal(models))
+    .post(verifyToken, postDataMeninggal(models))
+ 
+  route.route('/data-menikah')
+    .get(verifyToken, getDataMenikah(models))
+    .post(verifyToken, postDataMenikah(models))
+ 
+  route.route('/data-penanggungjawab')
+    .get(verifyToken, getPenanggungJawab(models))
+    .post(verifyToken, postPenanggungJawab(models))
+ 
+  route.route('/data-tugas')
+    .get(verifyToken, getTugas(models))
+    .post(verifyToken, postTugas(models))
 
   route.route('/optionsWilayahPanjaitan')
     .get(verifyToken, optionsWilayahPanjaitan(models))

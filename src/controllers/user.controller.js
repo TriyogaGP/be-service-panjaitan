@@ -39,6 +39,8 @@ const {
 	_wilayah2023Option,
 	_wilayah2023Cetak,
 	_iuranAllData,
+	_penanggungjawabAllData,
+	_tugasAllData,
 } = require('../controllers/helper.service')
 const { 
 	_buildResponseAdmin,
@@ -53,6 +55,7 @@ const pdf = require("html-pdf");
 const path = require("path");
 const fs = require('fs');
 const _ = require('lodash');
+const { DateTime } = require('luxon')
 const { logger } = require('../configs/db.winston')
 const nodeGeocoder = require('node-geocoder');
 const readXlsxFile = require('read-excel-file/node');
@@ -928,6 +931,443 @@ function postIuran (models) {
 				totalIuran: totalIuran.total,
 			}
 			await models.Iuran.update(kirimdataIuran, { where: { idIuran: body.idIuran, idBiodata: body.idBiodata } })
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getDataMeninggal (models) {
+	return async (req, res, next) => {
+		let { page = 1, limit = 20, sort = '', startdate, enddate, keyword } = req.query
+		let where = {}
+		try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			startdate = startdate ? startdate : DateTime.local().plus({ month: -1 }).toISODate(),
+			enddate = enddate ? enddate : DateTime.local().toISODate()
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
+					{ kategori : { [Op.like]: `%${keyword}%` }},
+					{ nama : { [Op.like]: `%${keyword}%` }},
+					{ yangDitinggal : { [Op.like]: `%${keyword}%` }},
+					{ rumahDuka : { [Op.like]: `%${keyword}%` }},
+					{ acaraAdat : { [Op.like]: `%${keyword}%` }},
+					{ penanggungJawab : { [Op.like]: `%${keyword}%` }},
+					{ yangMemberiSumbangan : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			const mappingSortField = [
+				'wilayah', 'tanggal', 'kategori'
+			]
+			const orders = buildOrderQuery(sort, mappingSortField)
+			
+			if(orders.length === 0){
+				orders.push(['createdAt', 'DESC'])
+			}
+			
+			where = {  ...whereKey, tanggal: { [Op.between]: [startdate, enddate] } }
+
+			const { count, rows: dataMeninggal } = await models.RekapMeninggal.findAndCountAll({
+				where,
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					},
+				],
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+
+			const responseData = buildMysqlResponseWithPagination(
+				dataMeninggal,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData)
+		} catch (err) {
+			return NOT_FOUND(res, err.message)
+		}
+	}
+}
+
+function postDataMeninggal (models) {
+  return async (req, res, next) => {
+		let body = req.body
+    try {
+			let kirimdata;
+			const { userID } = req.JWTDecoded
+			if(body.jenis == 'ADD'){
+				kirimdata = {
+					idRekap: makeRandom(10),
+					wilayah: body.wilayah,
+					tanggal: body.tanggal,
+					kategori: body.kategori,
+					nama: body.nama,
+					yangDitinggal: body.yangDitinggal,
+					rumahDuka: body.rumahDuka,
+					acaraAdat: body.acaraAdat,
+					penanggungJawab: body.penanggungJawab,
+					yangMemberiSumbangan: body.yangMemberiSumbangan,
+					keterangan: body.keterangan,
+					createBy: userID,
+				}
+				await models.RekapMeninggal.create(kirimdata)
+			}else if(body.jenis == 'EDIT'){
+				kirimdata = {
+					wilayah: body.wilayah,
+					tanggal: body.tanggal,
+					kategori: body.kategori,
+					nama: body.nama,
+					yangDitinggal: body.yangDitinggal,
+					rumahDuka: body.rumahDuka,
+					acaraAdat: body.acaraAdat,
+					penanggungJawab: body.penanggungJawab,
+					yangMemberiSumbangan: body.yangMemberiSumbangan,
+					keterangan: body.keterangan,
+					createBy: userID,
+				}
+				await models.RekapMeninggal.update(kirimdata, { where: { idRekap: body.idRekap } })
+			}else if(body.jenis == 'DELETE'){
+				await models.RekapMeninggal.destroy({ where: { idRekap: body.idRekap } })	
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getDataMenikah (models) {
+	return async (req, res, next) => {
+		let { page = 1, limit = 20, sort = '', startdate, enddate, keyword } = req.query
+		let where = {}
+		try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			startdate = startdate ? startdate : DateTime.local().plus({ month: -1 }).toISODate(),
+			enddate = enddate ? enddate : DateTime.local().toISODate()
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
+					{ kategori : { [Op.like]: `%${keyword}%` }},
+					{ nama : { [Op.like]: `%${keyword}%` }},
+					{ orangTuaMenantu : { [Op.like]: `%${keyword}%` }},
+					{ pemberkatan : { [Op.like]: `%${keyword}%` }},
+					{ penanggungJawab : { [Op.like]: `%${keyword}%` }},
+					{ yangMemberiSumbangan : { [Op.like]: `%${keyword}%` }},
+					{ pemberiUlos : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			const mappingSortField = [
+				'wilayah', 'tanggal', 'kategori'
+			]
+			const orders = buildOrderQuery(sort, mappingSortField)
+			
+			if(orders.length === 0){
+				orders.push(['createdAt', 'DESC'])
+			}
+			
+			where = {  ...whereKey, tanggal: { [Op.between]: [startdate, enddate] } }
+
+			const { count, rows: dataMenikah } = await models.RekapMenikah.findAndCountAll({
+				where,
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					},
+				],
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+
+			const responseData = buildMysqlResponseWithPagination(
+				dataMenikah,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData)
+		} catch (err) {
+			return NOT_FOUND(res, err.message)
+		}
+	}
+}
+
+function postDataMenikah (models) {
+  return async (req, res, next) => {
+		let body = req.body
+    try {
+			let kirimdata;
+			const { userID } = req.JWTDecoded
+			if(body.jenis == 'ADD'){
+				kirimdata = {
+					idRekap: makeRandom(10),
+					wilayah: body.wilayah,
+					tanggal: body.tanggal,
+					kategori: body.kategori,
+					nama: body.nama,
+					orangTuaMenantu: body.orangTuaMenantu,
+					pemberkatan: body.pemberkatan,
+					penanggungJawab: body.penanggungJawab,
+					yangMemberiSumbangan: body.yangMemberiSumbangan,
+					pemberiUlos: body.pemberiUlos,
+					keterangan: body.keterangan,
+					createBy: userID,
+				}
+				await models.RekapMenikah.create(kirimdata)
+			}else if(body.jenis == 'EDIT'){
+				kirimdata = {
+					wilayah: body.wilayah,
+					tanggal: body.tanggal,
+					kategori: body.kategori,
+					nama: body.nama,
+					orangTuaMenantu: body.orangTuaMenantu,
+					pemberkatan: body.pemberkatan,
+					penanggungJawab: body.penanggungJawab,
+					yangMemberiSumbangan: body.yangMemberiSumbangan,
+					pemberiUlos: body.pemberiUlos,
+					keterangan: body.keterangan,
+					createBy: userID,
+				}
+				await models.RekapMenikah.update(kirimdata, { where: { idRekap: body.idRekap } })
+			}else if(body.jenis == 'DELETE'){
+				await models.RekapMenikah.destroy({ where: { idRekap: body.idRekap } })	
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getPenanggungJawab (models) {
+	return async (req, res, next) => {
+		let { tahun, kategori, keyword } = req.query
+		let where = {}
+		try {
+			// let tahun = dayjs().format('YYYY')
+			where = keyword ? { nama : { [Op.like]: `%${keyword}%` }} : {}
+
+			const dataRekapPenanggungJawab = await models.RekapPenanggungJawab.findAll({
+				where,
+				order: [['nama', 'ASC']],
+			});
+
+			let result = await Promise.all(dataRekapPenanggungJawab.map(str => {
+				// let menikah = JSON.parse(str.menikah)
+				// let meninggal = JSON.parse(str.meninggal)
+				// let dataMenikah = menikah.filter(val => val.tahun === tahun)
+				// let dataMeninggal = meninggal.filter(val => val.tahun === tahun)
+				
+				let penanggungjawab = kategori === 'menikah' ? JSON.parse(str.menikah) : JSON.parse(str.meninggal)
+				let dataPenanggungJawab = penanggungjawab.filter(val => val.tahun === tahun)
+				// console.log(dataMenikah);
+				return {
+					idRekap: str.idRekap,
+					kategori: str.kategori,
+					nama: str.nama,
+					penanggungjawab: dataPenanggungJawab.length ? kategori === 'menikah' ? dataPenanggungJawab[0].menikah : dataPenanggungJawab[0].meninggal : null,
+					totalPenanggungJawab: kategori === 'menikah' ? str.totalMenikah : str.totalMeninggal,
+					// menikah: dataMenikah.length ? dataMenikah[0].menikah : null,
+					// meninggal: dataMeninggal.length ? dataMeninggal[0].meninggal : null,
+					// totalMenikah: str.totalMenikah,
+					// totalMeninggal: str.totalMeninggal,
+				}
+			}))
+
+			if(result.filter(val => val.penanggungjawab === null).length) return OK(res)
+			const totalPenanggungJawab = await _penanggungjawabAllData({ models, tahun, kategori })
+
+			// console.log(totalPenanggungJawab);
+			return OK(res, { 
+				result: [{
+					idRekap: '',
+					kategori: 'Bidang Adat',
+					nama: '',
+					penanggungjawab: null,
+					totalPenanggungJawab: 0,
+					// menikah: null,
+					// meninggal: null,
+					// totalMenikah: 0,
+					// totalMeninggal: 0,
+				}, ...result.filter(str => str.kategori === 'Bidang Adat'),
+				{
+					idRekap: '',
+					kategori: 'Penasehat Tetap / Ketua Bidang / Ketua Wilayah',
+					nama: '',
+					penanggungjawab: null,
+					totalPenanggungJawab: 0,
+					// menikah: null,
+					// meninggal: null,
+					// totalMenikah: 0,
+					// totalMeninggal: 0,
+				}, ...result.filter(str => str.kategori === 'Penasehat Tetap / Ketua Bidang / Ketua Wilayah'), totalPenanggungJawab.dataPenanggungJawab],
+				totalKeseluruhanPenanggungJawab: totalPenanggungJawab.totalKeseluruhanPenanggungJawab,
+				totalKeseluruhanPenanggungJawabPerTahun: totalPenanggungJawab.totalKeseluruhanPenanggungJawabPerTahun,
+			})
+		} catch (err) {
+			return NOT_FOUND(res, err.message)
+		}
+	}
+}
+
+function postPenanggungJawab (models) {
+  return async (req, res, next) => {
+		let body = req.body
+    try {
+			// const { userID } = req.JWTDecoded
+			const dataPenanggungJawab = await models.RekapPenanggungJawab.findOne({ where: { idRekap: body.idRekap } })
+			let hasil = body.kategori === 'menikah' ? JSON.parse(dataPenanggungJawab.menikah) : JSON.parse(dataPenanggungJawab.meninggal)
+			let datapenangungjawab = hasil.filter(str => str.tahun !== body.tahun)
+			let obj = datapenangungjawab.length ? [ ...datapenangungjawab, body.kategori === 'menikah' ? {
+				tahun: body.penanggungjawab.tahun,
+				menikah: body.penanggungjawab.penanggungjawab
+			} : {
+				tahun: body.penanggungjawab.tahun,
+				meninggal: body.penanggungjawab.penanggungjawab
+			} ] : [ body.kategori === 'menikah' ? {
+				tahun: body.penanggungjawab.tahun,
+				menikah: body.penanggungjawab.penanggungjawab
+			} : {
+				tahun: body.penanggungjawab.tahun,
+				meninggal: body.penanggungjawab.penanggungjawab
+			} ]
+			const totalPenanggungJawab = obj.reduce((acc, curr) => {
+				const { menikah, meninggal } = curr
+				const totalData = body.kategori === 'menikah' ? menikah.total : meninggal.total
+				return {
+					total: acc.total + totalData,
+				};
+			}, {
+				total: 0,
+			});
+			let kirimdataPenanggungJawab = body.kategori === 'menikah' ? {
+				menikah: JSON.stringify(obj),
+				totalMenikah: totalPenanggungJawab.total,
+			} : {
+				meninggal: JSON.stringify(obj),
+				totalMeninggal: totalPenanggungJawab.total,
+			}
+			await models.RekapPenanggungJawab.update(kirimdataPenanggungJawab, { where: { idRekap: body.idRekap } })
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getTugas (models) {
+	return async (req, res, next) => {
+		// , kategori
+		let { tahun, bulan, keyword } = req.query
+		let where = {}
+		try {
+			// let tahun = dayjs().format('YYYY')
+			where = keyword ? { '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }} : {}
+
+			const dataRekapTugas = await models.RekapTugas.findAll({
+				where,
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					},
+				],
+				order: [['wilayah', 'ASC']],
+			});
+
+			let result = await Promise.all(dataRekapTugas.map(str => {
+				let tugasMenikah = JSON.parse(str.menikah)
+				let tugasMeninggal = JSON.parse(str.meninggal)
+				let datatugasMenikahTemp = tugasMenikah.filter(val => val.tahun === tahun)
+				let datatugasMeninggalTemp = tugasMeninggal.filter(val => val.tahun === tahun)
+				let wadahMenikah = datatugasMenikahTemp.length ? datatugasMenikahTemp[0].menikah : []
+				let wadahMeninggal = datatugasMeninggalTemp.length ? datatugasMeninggalTemp[0].meninggal : []
+				let dataTugasMenikah = wadahMenikah.filter(val => val.bulan === parseInt(bulan))
+				let dataTugasMeninggal = wadahMeninggal.filter(val => val.bulan === parseInt(bulan))
+				let gabungTemp = Object.assign(dataTugasMenikah.length && dataTugasMenikah[0].data, dataTugasMeninggal.length && dataTugasMeninggal[0].data)
+				let gabung = gabungTemp !== 0 ? Object.assign(gabungTemp, {total: gabungTemp ? gabungTemp.totalmenikah + gabungTemp.totalmeninggal : 0}) : null
+				return {
+					idRekap: str.idRekap,
+					wilayahKode: str.WilayahPanjaitan.kode,
+					wilayahNama: str.WilayahPanjaitan.label,
+					bulan,
+					tugas: gabung,
+					totalTugas: gabung.total,
+				}
+			}))
+
+			// if(result.filter(val => val.tugas === null).length) return OK(res)
+			const totalTugas = await _tugasAllData({ models, tahun, bulan })
+			
+			// console.log(totalTugas);
+			return OK(res, { 
+				result: [...result,
+					totalTugas.dataTugasBulanIni,
+					totalTugas.dataTugasSampaiBulanSebelumnya,
+					totalTugas.dataTugasSampaiBulanIni,
+				],
+				totalKeseluruhanTugas: totalTugas.totalKeseluruhanTugas,
+				totalKeseluruhanTugasPerTahun: totalTugas.totalKeseluruhanTugasPerTahun,
+			})
+		} catch (err) {
+			return NOT_FOUND(res, err.message)
+		}
+	}
+}
+
+function postTugas (models) {
+  return async (req, res, next) => {
+		let body = req.body
+    try {
+			// const { userID } = req.JWTDecoded
+			const dataTugas = await models.RekapTugas.findOne({ where: { idRekap: body.idRekap, wilayah: body.wilayah } })
+			let hasilMenikah = JSON.parse(dataTugas.menikah)
+			let hasilMeninggal = JSON.parse(dataTugas.meninggal)
+			let datatugasMenikah_Tampung = hasilMenikah.filter(str => str.tahun !== body.tahun)
+			let datatugasMeninggal_Tampung = hasilMeninggal.filter(str => str.tahun !== body.tahun)
+			
+			let datatugasMenikahTemp = hasilMenikah.filter(str => str.tahun === body.tahun)
+			datatugasMenikahTemp = datatugasMenikahTemp.length ? datatugasMenikahTemp[0].menikah.filter(val => val.bulan !== body.bulan) : []
+			datatugasMenikahTemp = _.sortBy([ ...datatugasMenikahTemp, body.menikah ], ['bulan'])
+
+			let datatugasMeninggalTemp = hasilMeninggal.filter(str => str.tahun === body.tahun)
+			datatugasMeninggalTemp = datatugasMeninggalTemp.length ? datatugasMeninggalTemp[0].meninggal.filter(val => val.bulan !== body.bulan) : []
+			datatugasMeninggalTemp = _.sortBy([ ...datatugasMeninggalTemp, body.meninggal ], ['bulan'])
+
+			datatugasMenikah_Tampung = _.sortBy([ ...datatugasMenikah_Tampung, { tahun: body.tahun, menikah: datatugasMenikahTemp}], ['tahun'])
+			datatugasMeninggal_Tampung = _.sortBy([ ...datatugasMeninggal_Tampung, { tahun: body.tahun, meninggal: datatugasMeninggalTemp}], ['tahun'])
+
+			const totalMenikah = datatugasMenikahTemp.reduce((acc, curr) => {
+				return { totalmenikah: acc.totalmenikah + curr.data.totalmenikah };
+			}, { totalmenikah: 0 });
+			
+			const totalMeninggal = datatugasMeninggalTemp.reduce((acc, curr) => {
+				return { totalmeninggal: acc.totalmeninggal + curr.data.totalmeninggal };
+			}, { totalmeninggal: 0 });
+
+			let kirimdataTugas = {
+				menikah: JSON.stringify(datatugasMenikah_Tampung),
+				meninggal: JSON.stringify(datatugasMeninggal_Tampung),
+				totalMenikah: totalMenikah.totalmenikah,
+				totalMeninggal: totalMeninggal.totalmeninggal,
+			}
+			await models.RekapTugas.update(kirimdataTugas, { where: { idRekap: body.idRekap, wilayah: body.wilayah } })
 
 			return OK(res);
     } catch (err) {
@@ -2802,7 +3242,7 @@ function pdfCreateRaport (models) {
 
 function testing (models) {
 	return async (req, res, next) => {
-		let { suhu, ph, tds } = req.query
+		let { suhu, ph, tds, tahun, bulan, kategori } = req.query
 		try {
 			// let textInput = "JAWA BARAT"
 			// let regex = /[\!\@\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]/g
@@ -2855,11 +3295,75 @@ function testing (models) {
 			// 	}
 			// })
 
-			let tahun = dayjs().format('YYYY')
-			for (let index = 2024; index <= Number(tahun); index++) {
-				console.log(index);
-			}
-			return OK(res)
+			// let tahun = dayjs().format('YYYY')
+			// for (let index = 2024; index <= Number(tahun); index++) {
+			// 	console.log(index);
+			// }
+
+			const dataRekapTugas = await models.RekapTugas.findAll({
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					},
+				],
+				order: [['wilayah', 'ASC']],
+				limit: 1
+			});
+
+			let result = await Promise.all(dataRekapTugas.map(str => {
+				let tugasMenikah = JSON.parse(str.menikah)
+				let tugasMeninggal = JSON.parse(str.meninggal)
+				let datatugasMenikahTemp = tugasMenikah.filter(val => val.tahun === tahun)
+				let datatugasMeninggalTemp = tugasMeninggal.filter(val => val.tahun === tahun)
+				let wadahMenikah = datatugasMenikahTemp.length ? datatugasMenikahTemp[0].menikah : []
+				let wadahMeninggal = datatugasMeninggalTemp.length ? datatugasMeninggalTemp[0].meninggal : []
+				let dataTugasMenikah = wadahMenikah.filter(val => val.bulan <= parseInt(bulan)).map(str => str.data)
+				let dataTugasMeninggal = wadahMeninggal.filter(val => val.bulan <= parseInt(bulan)).map(str => str.data)
+				var tugasTampung = dataTugasMenikah.map((obj, index) => ({
+					...obj,
+					...dataTugasMeninggal[index],
+					total: obj.totalmenikah + dataTugasMeninggal[index].totalmeninggal
+				}));
+				const countObj = tugasTampung.reduce((acc, curr) => {
+					return {
+						Anak_Mangoli: acc.Anak_Mangoli + curr.Anak_Mangoli,
+						Boru_Muli: acc.Boru_Muli + curr.Boru_Muli,
+						Bere_Mangoli: acc.Bere_Mangoli + curr.Bere_Mangoli,
+						Pasahat: acc.Pasahat + curr.Pasahat,
+						Manjalo: acc.Manjalo + curr.Manjalo,
+						Resepsi: acc.Resepsi + curr.Resepsi,
+						M123: acc.M123 + curr.M123,
+						totalmenikah: acc.totalmenikah + curr.totalmenikah,
+						Ama: acc.Ama + curr.Ama,
+						Ina: acc.Ina + curr.Ina,
+						Hela: acc.Hela + curr.Hela,
+						Boru: acc.Boru + curr.Boru,
+						Anak_Boru: acc.Anak_Boru + curr.Anak_Boru,
+						Dakdanak: acc.Dakdanak + curr.Dakdanak,
+						totalmeninggal: acc.totalmeninggal + curr.totalmeninggal,
+						total: acc.total + curr.total,
+					};
+				}, {
+					Anak_Mangoli: 0,
+					Boru_Muli: 0,
+					Bere_Mangoli: 0,
+					Pasahat: 0,
+					Manjalo: 0,
+					Resepsi: 0,
+					M123: 0,
+					totalmenikah: 0,
+					Ama: 0,
+					Ina: 0,
+					Hela: 0,
+					Boru: 0,
+					Anak_Boru: 0,
+					Dakdanak: 0,
+					totalmeninggal: 0,
+					total: 0,
+				});
+				return countObj
+			}))
+			return OK(res, result)
 		} catch (err) {
 			return NOT_FOUND(res, err.message)
 		}
@@ -2877,6 +3381,14 @@ module.exports = {
   postBiodata,
 	getIuran,
 	postIuran,
+	getDataMeninggal,
+	postDataMeninggal,
+	getDataMenikah,
+	postDataMenikah,
+	getPenanggungJawab,
+	postPenanggungJawab,
+	getTugas,
+	postTugas,
 	optionsWilayahPanjaitan,
 	optionsKomisarisWilayah,
   downloadTemplate,
