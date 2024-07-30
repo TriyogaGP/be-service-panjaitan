@@ -1292,7 +1292,6 @@ function postPenanggungJawab (models) {
 				}
 				await models.RekapPenanggungJawab.update(kirimdataPenanggungJawab, { where: { idRekap: body.idRekap } })
 			}else if(body.jenis === 'ubahdata'){
-				console.log(body);
 				if(body.type === 'ADD'){
 					let dataMenikah = [], dataMeninggal = []
 					for (let index = 2024; index <= 2030; index++) {
