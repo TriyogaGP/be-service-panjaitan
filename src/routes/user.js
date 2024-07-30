@@ -14,6 +14,7 @@ const {
   postDataMeninggal,
   getDataMenikah,
   postDataMenikah,
+  getManagePenanggungJawab,
   getPenanggungJawab,
   postPenanggungJawab,
   getTugas,
@@ -63,6 +64,9 @@ module.exports = models => {
     .get(verifyToken, getDataMenikah(models))
     .post(verifyToken, postDataMenikah(models))
  
+  route.route('/manage-penanggungjawab')
+    .get(verifyToken, getManagePenanggungJawab(models))
+
   route.route('/data-penanggungjawab')
     .get(verifyToken, getPenanggungJawab(models))
     .post(verifyToken, postPenanggungJawab(models))

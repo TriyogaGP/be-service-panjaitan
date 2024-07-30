@@ -552,7 +552,7 @@ function getKategoriNotifikasi (models) {
 				const { idAdmin, jenis } = notifikasi;
 				if(_.includes(idAdmin, userID)) {
 					if(jenis === 'Update') tmp.ubah += 1
-					if(jenis === 'Delete') tmp.hapus += 1
+					if(jenis === 'Delete' || jenis === 'DeleteAll') tmp.hapus += 1
 				}
 				tmp.all += 1
 				return tmp
@@ -593,7 +593,7 @@ function getNotifikasi (models) {
 		let where = {}
     try {
 			const { userID } = req.JWTDecoded
-			const type = kategori === '1' ? ['Update', 'Delete'] : kategori === '2' ? ['Update'] : ['Delete']
+			const type = kategori === '1' ? ['Update', 'Delete', 'DeleteAll'] : kategori === '2' ? ['Update'] : ['Delete', 'DeleteAll']
 			const offset = limit * (page - 1)
 			const { count, rows: datanotifikasi } = await models.TemporaryData.findAndCountAll({
 				where: { jenis: type },
@@ -668,24 +668,40 @@ function crudNotifikasi (models) {
 			}else if(body.jenis === 'SETUJU'){
 				const { kirimdataUser } = body.dataTemporary.payload
 				await sequelizeInstance.transaction(async trx => {
-					if(jenis === 'Delete') {
+					if(body.jenisNotif === 'Delete') {
 						await models.Iuran.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
 						await models.Biodata.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
-					}else if(jenis === 'Update') {
+					}else if(body.jenisNotif === 'Update') {
 						await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
 						await models.Anak.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
 						await models.Biodata.update(kirimdataUser, { where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx })
 						await models.Anak.bulkCreate(data.payload.kirimdataAnak, { transaction: trx })
+					}else if(body.jenisNotif === 'DeleteAll') {
+						kirimdataUser.map(async val => {
+							await models.Iuran.destroy({ where: { idBiodata: val.idBiodata } }, { transaction: trx });
+							await models.Biodata.destroy({ where: { idBiodata: val.idBiodata } }, { transaction: trx });
+						})
 					}
 				})
 			}else if(body.jenis === 'TIDAKSETUJU'){
 				const { kirimdataUser } = body.dataTemporary.payload
-				let kirimdata = {
-					statusBiodata: 1,
-					deleteBy: null,
-				}
-				await models.Biodata.update(kirimdata, { where: { idBiodata: kirimdataUser.idBiodata } })
-				await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
+				if(body.jenisNotif === 'Update' || body.jenisNotif === 'Delete'){
+					let kirimdata = {
+						statusBiodata: 1,
+						deleteBy: null,
+					}
+					await models.Biodata.update(kirimdata, { where: { idBiodata: kirimdataUser.idBiodata } })
+					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
+				}else{
+					kirimdataUser.map(async val => {
+						let kirimdata = {
+							statusBiodata: 1,
+							deleteBy: null,
+						}
+						await models.Biodata.update(kirimdata, { where: { idBiodata: val.idBiodata } })
+					})
+					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
+				} 
 			}
 			// else if(body.jenis === 'CREATE'){
 			// 	let payload = {

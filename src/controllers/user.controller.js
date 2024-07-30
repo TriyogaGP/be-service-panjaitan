@@ -750,11 +750,12 @@ function postBiodata (models) {
 	
 						let bodydata = {
 							idAdmin: JSON.stringify(dataAdmin.map(val => val.idAdmin)),//id admin pusat
-							jenis: 'Delete',
+							jenis: 'DeleteAll',
 							dataTemporary: JSON.stringify({
 								title: `Request Delete Record`,
 								message: `Permintaan penghapusan data oleh <strong>${nama}</strong>`,
-								payload: { dataUser },
+								payload: { kirimdataUser: dataUser },
+								reason: body.reason,
 							}),
 							imageTemporary: null,
 							createBy: userID,
@@ -1155,12 +1156,55 @@ function postDataMenikah (models) {
   }  
 }
 
+function getManagePenanggungJawab (models) {
+  return async (req, res, next) => {
+		let { page = 1, limit = 20, keyword } = req.query
+    let where = {}
+    try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ nama : { [Op.like]: `%${keyword}%` }},
+					{ kategori : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey;
+
+      const { count, rows: dataRekapPenanggungJawab } = await models.RekapPenanggungJawab.findAndCountAll({
+				where,
+				order: [['kategori', 'ASC']],
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+
+			// return OK(res, dataRekapPenanggungJawab)
+			const getResult = await Promise.all(dataRekapPenanggungJawab.map(async val => {
+				return {
+					idRekap: val.idRekap,
+					kategori: val.kategori,
+					nama: val.nama,
+				}
+			}))
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 function getPenanggungJawab (models) {
 	return async (req, res, next) => {
 		let { tahun, kategori, keyword } = req.query
 		let where = {}
 		try {
-			// let tahun = dayjs().format('YYYY')
 			where = keyword ? { nama : { [Op.like]: `%${keyword}%` }} : {}
 
 			const dataRekapPenanggungJawab = await models.RekapPenanggungJawab.findAll({
@@ -1169,31 +1213,21 @@ function getPenanggungJawab (models) {
 			});
 
 			let result = await Promise.all(dataRekapPenanggungJawab.map(str => {
-				// let menikah = JSON.parse(str.menikah)
-				// let meninggal = JSON.parse(str.meninggal)
-				// let dataMenikah = menikah.filter(val => val.tahun === tahun)
-				// let dataMeninggal = meninggal.filter(val => val.tahun === tahun)
-				
 				let penanggungjawab = kategori === 'menikah' ? JSON.parse(str.menikah) : JSON.parse(str.meninggal)
 				let dataPenanggungJawab = penanggungjawab.filter(val => val.tahun === tahun)
-				// console.log(dataMenikah);
+
 				return {
 					idRekap: str.idRekap,
 					kategori: str.kategori,
 					nama: str.nama,
 					penanggungjawab: dataPenanggungJawab.length ? kategori === 'menikah' ? dataPenanggungJawab[0].menikah : dataPenanggungJawab[0].meninggal : null,
 					totalPenanggungJawab: kategori === 'menikah' ? str.totalMenikah : str.totalMeninggal,
-					// menikah: dataMenikah.length ? dataMenikah[0].menikah : null,
-					// meninggal: dataMeninggal.length ? dataMeninggal[0].meninggal : null,
-					// totalMenikah: str.totalMenikah,
-					// totalMeninggal: str.totalMeninggal,
 				}
 			}))
 
 			if(result.filter(val => val.penanggungjawab === null).length) return OK(res)
 			const totalPenanggungJawab = await _penanggungjawabAllData({ models, tahun, kategori })
 
-			// console.log(totalPenanggungJawab);
 			return OK(res, { 
 				result: [{
 					idRekap: '',
@@ -1201,10 +1235,6 @@ function getPenanggungJawab (models) {
 					nama: '',
 					penanggungjawab: null,
 					totalPenanggungJawab: 0,
-					// menikah: null,
-					// meninggal: null,
-					// totalMenikah: 0,
-					// totalMeninggal: 0,
 				}, ...result.filter(str => str.kategori === 'Bidang Adat'),
 				{
 					idRekap: '',
@@ -1212,10 +1242,6 @@ function getPenanggungJawab (models) {
 					nama: '',
 					penanggungjawab: null,
 					totalPenanggungJawab: 0,
-					// menikah: null,
-					// meninggal: null,
-					// totalMenikah: 0,
-					// totalMeninggal: 0,
 				}, ...result.filter(str => str.kategori === 'Penasehat Tetap / Ketua Bidang / Ketua Wilayah'), totalPenanggungJawab.dataPenanggungJawab],
 				totalKeseluruhanPenanggungJawab: totalPenanggungJawab.totalKeseluruhanPenanggungJawab,
 				totalKeseluruhanPenanggungJawabPerTahun: totalPenanggungJawab.totalKeseluruhanPenanggungJawabPerTahun,
@@ -1231,39 +1257,105 @@ function postPenanggungJawab (models) {
 		let body = req.body
     try {
 			// const { userID } = req.JWTDecoded
-			const dataPenanggungJawab = await models.RekapPenanggungJawab.findOne({ where: { idRekap: body.idRekap } })
-			let hasil = body.kategori === 'menikah' ? JSON.parse(dataPenanggungJawab.menikah) : JSON.parse(dataPenanggungJawab.meninggal)
-			let datapenangungjawab = hasil.filter(str => str.tahun !== body.tahun)
-			let obj = datapenangungjawab.length ? [ ...datapenangungjawab, body.kategori === 'menikah' ? {
-				tahun: body.penanggungjawab.tahun,
-				menikah: body.penanggungjawab.penanggungjawab
-			} : {
-				tahun: body.penanggungjawab.tahun,
-				meninggal: body.penanggungjawab.penanggungjawab
-			} ] : [ body.kategori === 'menikah' ? {
-				tahun: body.penanggungjawab.tahun,
-				menikah: body.penanggungjawab.penanggungjawab
-			} : {
-				tahun: body.penanggungjawab.tahun,
-				meninggal: body.penanggungjawab.penanggungjawab
-			} ]
-			const totalPenanggungJawab = obj.reduce((acc, curr) => {
-				const { menikah, meninggal } = curr
-				const totalData = body.kategori === 'menikah' ? menikah.total : meninggal.total
-				return {
-					total: acc.total + totalData,
-				};
-			}, {
-				total: 0,
-			});
-			let kirimdataPenanggungJawab = body.kategori === 'menikah' ? {
-				menikah: JSON.stringify(obj),
-				totalMenikah: totalPenanggungJawab.total,
-			} : {
-				meninggal: JSON.stringify(obj),
-				totalMeninggal: totalPenanggungJawab.total,
+			if(body.jenis === 'ubahnilai'){
+				const dataPenanggungJawab = await models.RekapPenanggungJawab.findOne({ where: { idRekap: body.idRekap } })
+				let hasil = body.kategori === 'menikah' ? JSON.parse(dataPenanggungJawab.menikah) : JSON.parse(dataPenanggungJawab.meninggal)
+				let datapenangungjawab = hasil.filter(str => str.tahun !== body.tahun)
+				let obj = datapenangungjawab.length ? [ ...datapenangungjawab, body.kategori === 'menikah' ? {
+					tahun: body.penanggungjawab.tahun,
+					menikah: body.penanggungjawab.penanggungjawab
+				} : {
+					tahun: body.penanggungjawab.tahun,
+					meninggal: body.penanggungjawab.penanggungjawab
+				} ] : [ body.kategori === 'menikah' ? {
+					tahun: body.penanggungjawab.tahun,
+					menikah: body.penanggungjawab.penanggungjawab
+				} : {
+					tahun: body.penanggungjawab.tahun,
+					meninggal: body.penanggungjawab.penanggungjawab
+				} ]
+				const totalPenanggungJawab = obj.reduce((acc, curr) => {
+					const { menikah, meninggal } = curr
+					const totalData = body.kategori === 'menikah' ? menikah.total : meninggal.total
+					return {
+						total: acc.total + totalData,
+					};
+				}, {
+					total: 0,
+				});
+				let kirimdataPenanggungJawab = body.kategori === 'menikah' ? {
+					menikah: JSON.stringify(obj),
+					totalMenikah: totalPenanggungJawab.total,
+				} : {
+					meninggal: JSON.stringify(obj),
+					totalMeninggal: totalPenanggungJawab.total,
+				}
+				await models.RekapPenanggungJawab.update(kirimdataPenanggungJawab, { where: { idRekap: body.idRekap } })
+			}else if(body.jenis === 'ubahdata'){
+				console.log(body);
+				if(body.type === 'ADD'){
+					let dataMenikah = [], dataMeninggal = []
+					for (let index = 2024; index <= 2030; index++) {
+						dataMenikah.push({
+							tahun: String(index),
+							menikah: {
+								januari: 0,
+								februari: 0,
+								maret: 0,
+								april: 0,
+								mei: 0,
+								juni: 0,
+								juli: 0,
+								agustus: 0,
+								september: 0,
+								oktober: 0,
+								november: 0,
+								desember: 0,
+								total: 0,
+							}
+						})
+						dataMeninggal.push({
+							tahun: String(index),
+							meninggal: {
+								januari: 0,
+								februari: 0,
+								maret: 0,
+								april: 0,
+								mei: 0,
+								juni: 0,
+								juli: 0,
+								agustus: 0,
+								september: 0,
+								oktober: 0,
+								november: 0,
+								desember: 0,
+								total: 0,
+							}
+						})
+					}
+
+					let kirimdata = {
+						idRekap: makeRandom(10),
+						kategori: body.kategori,
+						nama: body.nama,
+						menikah: JSON.stringify(dataMenikah),
+						meninggal: JSON.stringify(dataMeninggal),
+						totalMenikah: '0',
+						totalMeninggal: '0',
+					}
+
+					await models.RekapPenanggungJawab.create(kirimdata)
+				}else if(body.type === 'EDIT'){
+					let kirimdata = {
+						kategori: body.kategori,
+						nama: body.nama,
+					}
+
+					await models.RekapPenanggungJawab.update(kirimdata, { where: { idRekap: body.idRekap } })
+				}else if(body.type === 'DELETE'){
+					await models.RekapPenanggungJawab.destroy({ where: { idRekap: body.idRekap } })
+				}
 			}
-			await models.RekapPenanggungJawab.update(kirimdataPenanggungJawab, { where: { idRekap: body.idRekap } })
 
 			return OK(res);
     } catch (err) {
@@ -3385,6 +3477,7 @@ module.exports = {
 	postDataMeninggal,
 	getDataMenikah,
 	postDataMenikah,
+	getManagePenanggungJawab,
 	getPenanggungJawab,
 	postPenanggungJawab,
 	getTugas,
