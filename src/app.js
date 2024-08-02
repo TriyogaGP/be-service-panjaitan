@@ -4,6 +4,7 @@ const corsAllowed = require('../cors-allowed-origins.json')
 const auth = require('./routes/auth');
 const settings = require('./routes/settings');
 const user = require('./routes/user');
+const apirest = require('./routes/apirest');
 const { sequelizeInstance, Sequelize } = require('./configs/db.config');
 // const { importModels } = require('./models/index')
 const { importModels } = require('@triyogagp/backend-common/models/panjaitan')
@@ -61,7 +62,10 @@ try {
   app.use('/api/v1/auth', auth(models));
   app.use('/api/v1/settings', settings(models));
   app.use('/api/v1/user', user(models));
-  
+  //apirest
+  app.use('/v1/apirest', apirest(models));
+
+
   app.use(swagger());
 
   const {

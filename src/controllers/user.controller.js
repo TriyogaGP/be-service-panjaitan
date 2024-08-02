@@ -85,6 +85,12 @@ function getDashboard (models) {
 				}
 				return obj;
 			}))
+
+			// const total = responseData.reduce((acc, curr) => {
+			// 	return { jml: acc.jml + curr.jml };
+			// }, { jml: 0 });
+
+			// return OK(res, consumerType === 1 || consumerType === 2 ? { responseData, total } : responseData.filter(val => val.kode === wilayah));
 			return OK(res, consumerType === 1 || consumerType === 2 ? responseData : responseData.filter(val => val.kode === wilayah));
     } catch (err) {
 			return NOT_FOUND(res, err.message)
@@ -299,7 +305,8 @@ function getBiodata (models) {
 				}else if(splitFilter[0] === 'Wilayah') {
 					where2 = { '$WilayahPanjaitan.label$' : { [Op.like]: `%${splitFilter[1]}%` }}
 					}else if(splitFilter[0] === 'Komisaris') {
-					where2 = { '$KomisarisWilayah.nama_komisaris$' : { [Op.like]: `%${splitFilter[1]}%` }}
+					// where2 = { '$KomisarisWilayah.nama_komisaris$' : { [Op.like]: `%${splitFilter[1]}%` }}
+					where2 = { komisarisWilayah : { [Op.like]: `%${splitFilter[1]}%` }}
 				}
 			}
 
@@ -455,24 +462,31 @@ function postBiodata (models) {
     try {
 			const { userID, consumerType, nama } = req.JWTDecoded
 			let kirimdataUser, kirimdataAnak = [];
-			if(body.jenis == 'ADD'){
+
+			const pengecekanNik = async (body) => {
+				const { wilayah, komisarisWilayah, ompu, generasi } = body
+				let nik;
 				const data = await models.Biodata.findOne({
-					where: { wilayah: body.wilayah, komisarisWilayah: body.komisarisWilayah },
+					where: { wilayah, komisarisWilayah },
 					attributes: ["nik"],
 					order: [
 						['createdAt', 'DESC'],
 					],
 				});
-				let nik;
-				if(data) {
+
+				if(data){
 					let text = data.nik.split('.')[4]
-					nik = `${body.wilayah}.${body.komisarisWilayah}.${body.ompu}${body.generasi}.${(parseInt(text.substr(2))+1).toString().padStart(4, '0')}`
+					nik = `${wilayah}.${komisarisWilayah}.${ompu}${generasi}.${(parseInt(text.substr(2))+1).toString().padStart(4, '0')}`
 				}else{
-					nik = `${body.wilayah}.${body.komisarisWilayah}.${body.ompu}${body.generasi}.0001`
+					nik = `${wilayah}.${komisarisWilayah}.${ompu}${generasi}.0001`
 				}
+				return nik;
+			}
+
+			if(body.jenis == 'ADD'){
 				kirimdataUser = {
 					idBiodata: body.idBiodata,
-					nik,
+					nik: await pengecekanNik(body),
 					namaLengkap: body.namaLengkap,
 					tempatSuami: body.tempatSuami,
 					tanggalLahirSuami: body.tanggalLahirSuami,
@@ -551,28 +565,18 @@ function postBiodata (models) {
 			}else if(body.jenis == 'EDIT'){
 				const cek = await models.Biodata.findOne({
 					where: { idBiodata: body.idBiodata },
-					attributes: ["wilayah", "nik"],
+					attributes: ["wilayah", "nik", "komisarisWilayah"],
 				});
 				let nik;
 				if(body.wilayah === cek.wilayah) {
-					nik = cek.nik
-				}else{
-					const data = await models.Biodata.findOne({
-						where: { wilayah: body.wilayah, komisarisWilayah: body.komisarisWilayah },
-						attributes: ["nik"],
-						order: [
-							['createdAt', 'DESC'],
-						],
-					});
-					if(data){
-						let text = data.nik.split('.')[4]
-						nik = `${body.wilayah}.${body.komisarisWilayah}.${body.ompu}${body.generasi}.${(parseInt(text.substr(2))+1).toString().padStart(4, '0')}`
+					if(body.komisarisWilayah !== cek.komisarisWilayah) {
+						nik = await pengecekanNik(body)
 					}else{
-						nik = `${body.wilayah}.${body.komisarisWilayah}.${body.ompu}${body.generasi}.0001`
+						nik = cek.nik
 					}
+				}else{
+					nik = await pengecekanNik(body)
 				}
-
-				console.log(body.tanggalLahirSuami);
 
 				kirimdataUser = {
 					idBiodata: body.idBiodata,
@@ -629,7 +633,7 @@ function postBiodata (models) {
 							jenis: 'Update',
 							dataTemporary: JSON.stringify({
 								title: `Request Update Record`,
-								message: `Permintaan perubahan data oleh <strong>${nama}</strong>`,
+								message: `Permintaan perubahan data oleh <strong>${nama}</strong><br />`,
 								payload: { kirimdataUser, kirimdataAnak },
 								reason: body.reason,
 							}),
@@ -662,7 +666,7 @@ function postBiodata (models) {
 						jenis: 'Delete',
 						dataTemporary: JSON.stringify({
 							title: `Request Delete Record`,
-							message: `Permintaan penghapusan data oleh <strong>${nama}</strong>`,
+							message: `Permintaan penghapusan data oleh <strong>${nama}</strong><br />`,
 							payload: { kirimdataUser },
 						}),
 						imageTemporary: null,
@@ -690,7 +694,7 @@ function postBiodata (models) {
 							jenis: 'Delete',
 							dataTemporary: JSON.stringify({
 								title: `Request Delete Record`,
-								message: `Permintaan penghapusan data oleh <strong>${nama}</strong> atas nama <strong>${namaLengkap}</strong> dan nik <strong>${nik}</strong>`,
+								message: `Permintaan penghapusan data oleh <strong>${nama}</strong> atas nama <strong>${namaLengkap}</strong> dan nik <strong>${nik}</strong><br />`,
 								payload: { kirimdataUser: { idBiodata: body.idBiodata, namaLengkap, nik } },
 								reason: body.reason,
 							}),
@@ -735,7 +739,8 @@ function postBiodata (models) {
 							deleteBy: userID,
 							// deletedAt: new Date(),
 						}
-						
+
+						let message = `Permintaan penghapusan data oleh <strong>${nama}</strong> atas nama : <ol style='padding-left:15px;'>`
 						await Promise.all(body.idBiodata.map(async str => {
 							const datauser = await models.Biodata.findOne({
 								where: { idBiodata: str },
@@ -744,16 +749,17 @@ function postBiodata (models) {
 							const { namaLengkap, nik } = datauser
 
 							dataUser.push({ idBiodata: str, nik, namaLengkap })
-
+							message += `<li>${namaLengkap} (${nik})</li>`
 							await models.Biodata.update(kirimdataUser, { where: { idBiodata: str } })
 						}))
-	
+						message += `</ol>`
+						
 						let bodydata = {
 							idAdmin: JSON.stringify(dataAdmin.map(val => val.idAdmin)),//id admin pusat
 							jenis: 'DeleteAll',
 							dataTemporary: JSON.stringify({
 								title: `Request Delete Record`,
-								message: `Permintaan penghapusan data oleh <strong>${nama}</strong>`,
+								message,
 								payload: { kirimdataUser: dataUser },
 								reason: body.reason,
 							}),
@@ -2893,17 +2899,27 @@ function exportExcel (models) {
 					}
 				})
 
+				
 				for (let index = 0; index < dataTampung.length; index++) {
-					const dataKeanggotaan = await models.Biodata.findAll({
+					const dataAnggota = await models.Biodata.findAll({
 						where: { komisarisWilayah: dataTampung[index].kodeKomisarisWilayah },
 						include: [
 							{ 
 								model: models.Anak,
 							},
 						],
-						order: [['nik', 'ASC']],
 					});
 
+					const cekDataAnggota = async (data) => {
+						let hasil = await Promise.all(data.map(val => {
+							let nikBayangan = val.nik.split('.')[4]
+							return { ...val.dataValues, nikBayangan }
+						}))
+	
+						return _.orderBy(hasil, ['nikBayangan'], ['asc']);
+					}
+
+					const dataKeanggotaan = await cekDataAnggota(dataAnggota);
 					const result = await Promise.all(dataKeanggotaan.map(async (val, i) => {
 						let provinsi = await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' })
 						let kabkota = await _wilayah2023Option({ models, kode: val.kabKota, bagian: 'kabkota' })
