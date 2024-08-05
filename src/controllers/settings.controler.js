@@ -668,11 +668,12 @@ function crudNotifikasi (models) {
 			}else if(body.jenis === 'SETUJU'){
 				const { kirimdataUser } = body.dataTemporary.payload
 				await sequelizeInstance.transaction(async trx => {
+					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
+					
 					if(body.jenisNotif === 'Delete') {
 						await models.Iuran.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
 						await models.Biodata.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
 					}else if(body.jenisNotif === 'Update') {
-						await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
 						await models.Anak.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
 						await models.Biodata.update(kirimdataUser, { where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx })
 						await models.Anak.bulkCreate(data.payload.kirimdataAnak, { transaction: trx })
@@ -685,13 +686,13 @@ function crudNotifikasi (models) {
 				})
 			}else if(body.jenis === 'TIDAKSETUJU'){
 				const { kirimdataUser } = body.dataTemporary.payload
+				await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
 				if(body.jenisNotif === 'Update' || body.jenisNotif === 'Delete'){
 					let kirimdata = {
 						statusBiodata: 1,
 						deleteBy: null,
 					}
 					await models.Biodata.update(kirimdata, { where: { idBiodata: kirimdataUser.idBiodata } })
-					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
 				}else{
 					kirimdataUser.map(async val => {
 						let kirimdata = {
@@ -700,7 +701,6 @@ function crudNotifikasi (models) {
 						}
 						await models.Biodata.update(kirimdata, { where: { idBiodata: val.idBiodata } })
 					})
-					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } })
 				} 
 			}
 			// else if(body.jenis === 'CREATE'){
