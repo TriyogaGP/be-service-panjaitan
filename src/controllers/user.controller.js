@@ -15,6 +15,7 @@ const {
 	shuffleArray,
 	getRandomArray,
 	makeRandom,
+	convertDateForDay,
 	dateconvert,
 	convertDate,
 	convertDate3,
@@ -1567,402 +1568,586 @@ function optionsKomisarisWilayah (models) {
 
 function downloadTemplate (models) {
 	return async (req, res, next) => {
-		let { wilayah } = req.params
+		let { wilayah, kategori } = req.query
 	  try {
-			let workbook = new excel.Workbook();
-			let worksheetBiodata = workbook.addWorksheet("Biodata");
-			let worksheetAnak = workbook.addWorksheet("Anak");
-			let worksheetStatus = workbook.addWorksheet("Status");
-			let worksheetOmpu = workbook.addWorksheet("Ompu");
-			let worksheetWilayahPanjaitan = workbook.addWorksheet("Wilayah");
-			let worksheetKomisarisWilayah = workbook.addWorksheet("Komisaris");
-			let worksheetProvinsi = workbook.addWorksheet("Provinsi");
-			let worksheetKabKota = workbook.addWorksheet("Kabupaten - Kota");
-			let worksheetKecamatan = workbook.addWorksheet("Kecamatan");
-			let worksheetKelurahan = workbook.addWorksheet("Kelurahan");
+			if(kategori === 'datakeanggotaan'){
+				let workbook = new excel.Workbook();
+				let worksheetBiodata = workbook.addWorksheet("Biodata");
+				let worksheetAnak = workbook.addWorksheet("Anak");
+				let worksheetStatus = workbook.addWorksheet("Status");
+				let worksheetOmpu = workbook.addWorksheet("Ompu");
+				let worksheetWilayahPanjaitan = workbook.addWorksheet("Wilayah");
+				let worksheetKomisarisWilayah = workbook.addWorksheet("Komisaris");
+				let worksheetProvinsi = workbook.addWorksheet("Provinsi");
+				let worksheetKabKota = workbook.addWorksheet("Kabupaten - Kota");
+				let worksheetKecamatan = workbook.addWorksheet("Kecamatan");
+				let worksheetKelurahan = workbook.addWorksheet("Kelurahan");
 
-			//Data Keanggotaan
-			worksheetBiodata.columns = [
-				{ header: "triggerbiodata", key: "triggerBiodata", width: 20 },
-				{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
-				{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-				{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 25 },
-				{ header: "ALAMAT", key: "alamat", width: 45 },
-				{ header: "PROVINSI", key: "provinsi", width: 20 },
-				{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
-				{ header: "KECAMATAN", key: "kecamatan", width: 20 },
-				{ header: "KELURAHAN", key: "kelurahan", width: 20 },
-				{ header: "KODE POS", key: "kodePos", width: 15 },
-				{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
-				{ header: "TELEPON SUAMI", key: "telp", width: 20 },
-				{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
-				{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 25 },
-				{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
-				{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
-				{ header: "TELEPON ISTRI", key: "telpIstri", width: 20 },
-				{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 25 },
-				{ header: "WILAYAH", key: "wilayah", width: 15 },
-				{ header: "KOMISARIS WILAYAH", key: "komisarisWilayah", width: 25 },
-				{ header: "OMPU", key: "ompu", width: 10 },
-				{ header: "GENERASI", key: "generasi", width: 15 },
-				{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
-				{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
-			];
+				//Data Keanggotaan
+				worksheetBiodata.columns = [
+					{ header: "triggerbiodata", key: "triggerBiodata", width: 20 },
+					{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
+					{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
+					{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 25 },
+					{ header: "ALAMAT", key: "alamat", width: 45 },
+					{ header: "PROVINSI", key: "provinsi", width: 20 },
+					{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
+					{ header: "KECAMATAN", key: "kecamatan", width: 20 },
+					{ header: "KELURAHAN", key: "kelurahan", width: 20 },
+					{ header: "KODE POS", key: "kodePos", width: 15 },
+					{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
+					{ header: "TELEPON SUAMI", key: "telp", width: 20 },
+					{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+					{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 25 },
+					{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
+					{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
+					{ header: "TELEPON ISTRI", key: "telpIstri", width: 20 },
+					{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 25 },
+					{ header: "WILAYAH", key: "wilayah", width: 15 },
+					{ header: "KOMISARIS WILAYAH", key: "komisarisWilayah", width: 25 },
+					{ header: "OMPU", key: "ompu", width: 10 },
+					{ header: "GENERASI", key: "generasi", width: 15 },
+					{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
+					{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
+				];
 
-			// const date = new Date();
-			// const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-			// const formattedDate = formatter.format(date);
+				// const date = new Date();
+				// const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+				// const formattedDate = formatter.format(date);
 
-			worksheetBiodata.addRows([{
-				triggerBiodata: '1', 
-				namaSuami: 'nama Suami', 
-				tanggalLahirSuami: new Date(),
-				tempatSuami: 'Bogor',
-				alamat: 'Bogor', 
-				provinsi: '32', 
-				kabKota: '32.01', 
-				kecamatan: '32.01.01', 
-				kelurahan: '32.01.01.1002', 
-				kodePos: '16913',
-				pekerjaanSuami: 'Karyawan Swasta', 
-				telp: '123456789', 
-				namaIstri: 'nama Istri', 
-				tempatIstri: 'Bogor',
-				tanggalLahirIstri: new Date(),
-				pekerjaanIstri: 'Guru', 
-				telpIstri: '123456789', 
-				jabatanPengurus: 'Ketua', 
-				wilayah: wilayah === '00' ? '01' : wilayah, 
-				komisarisWilayah: 'JakPus.001', 
-				ompu: 'M', 
-				generasi: '16', 
-				statusSuami: 'Hidup', 
-				statusIstri: 'Hidup', 
-			}]);
+				worksheetBiodata.addRows([{
+					triggerBiodata: '1', 
+					namaSuami: 'nama Suami', 
+					tanggalLahirSuami: new Date(),
+					tempatSuami: 'Bogor',
+					alamat: 'Bogor', 
+					provinsi: '32', 
+					kabKota: '32.01', 
+					kecamatan: '32.01.01', 
+					kelurahan: '32.01.01.1002', 
+					kodePos: '16913',
+					pekerjaanSuami: 'Karyawan Swasta', 
+					telp: '123456789', 
+					namaIstri: 'nama Istri', 
+					tempatIstri: 'Bogor',
+					tanggalLahirIstri: new Date(),
+					pekerjaanIstri: 'Guru', 
+					telpIstri: '123456789', 
+					jabatanPengurus: 'Ketua', 
+					wilayah: wilayah === '00' ? '01' : wilayah, 
+					komisarisWilayah: 'JakPus.001', 
+					ompu: 'M', 
+					generasi: '16', 
+					statusSuami: 'Hidup', 
+					statusIstri: 'Hidup', 
+				}]);
 
-			worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-						row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(5).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-						row.getCell(6).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(13).alignment = { vertical: 'middle', horizontal: 'left' };
-						row.getCell(14).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center'};
-						row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
-					}
+				worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+							row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(6).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(13).alignment = { vertical: 'middle', horizontal: 'left' };
+							row.getCell(14).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center'};
+							row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+					});
 				});
-			});
 
-			//Data Anak
-			worksheetAnak.columns = [
-				{ header: "triggeranak", key: "triggerAnak", width: 17 },
-				{ header: "NAMA ANAK", key: "namaAnak", width: 35 },
-				{ header: "KATEGORI ANAK", key: "kategoriAnak", width: 20 },
-				{ header: "TANGGAL LAHIR", key: "tanggalLahir", width: 20 },
-				{ header: "STATUS ANAK", key: "statusAnak", width: 20 },
-			];
-			worksheetAnak.addRows([
-				{
-					triggerAnak: '1', 
-					namaAnak: 'nama Anak 1', 
-					kategoriAnak: 'Boru', 
-					tanggalLahir: new Date(),
-					statusAnak: 'Hidup', 
-				},
-				{
-					triggerAnak: '1', 
-					namaAnak: 'nama Anak 2', 
-					kategoriAnak: 'Anak', 
-					tanggalLahir: new Date(),
-					statusAnak: 'Hidup', 
-				},
-			]);
-			worksheetAnak.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-						row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
-					}
+				//Data Anak
+				worksheetAnak.columns = [
+					{ header: "triggeranak", key: "triggerAnak", width: 17 },
+					{ header: "NAMA ANAK", key: "namaAnak", width: 35 },
+					{ header: "KATEGORI ANAK", key: "kategoriAnak", width: 20 },
+					{ header: "TANGGAL LAHIR", key: "tanggalLahir", width: 20 },
+					{ header: "STATUS ANAK", key: "statusAnak", width: 20 },
+				];
+				worksheetAnak.addRows([
+					{
+						triggerAnak: '1', 
+						namaAnak: 'nama Anak 1', 
+						kategoriAnak: 'Boru', 
+						tanggalLahir: new Date(),
+						statusAnak: 'Hidup', 
+					},
+					{
+						triggerAnak: '1', 
+						namaAnak: 'nama Anak 2', 
+						kategoriAnak: 'Anak', 
+						tanggalLahir: new Date(),
+						statusAnak: 'Hidup', 
+					},
+				]);
+				worksheetAnak.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+							row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+					});
 				});
-			});
-			
-			//Pil Status
-			worksheetStatus.columns = [
-				{ header: "KODE", key: "kode", width: 7 },
-				{ header: "LABEL", key: "label", width: 11 }
-			];
-			worksheetStatus.addRows([
-				{
-					kode: 0,
-					label: 'Hidup',
-				},
-				{
-					kode: 1,
-					label: 'Meninggal',
-				},
-			]);
-			worksheetStatus.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						// cell.alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-					}
+				
+				//Pil Status
+				worksheetStatus.columns = [
+					{ header: "KODE", key: "kode", width: 7 },
+					{ header: "LABEL", key: "label", width: 11 }
+				];
+				worksheetStatus.addRows([
+					{
+						kode: 0,
+						label: 'Hidup',
+					},
+					{
+						kode: 1,
+						label: 'Meninggal',
+					},
+				]);
+				worksheetStatus.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
 				});
-			});
-			
-			//Pil Ompu
-			worksheetOmpu.columns = [
-				{ header: "KODE", key: "kode", width: 7 },
-				{ header: "LABEL", key: "label", width: 17 }
-			];
-			worksheetOmpu.addRows(await _allOption({ table: models.Ompu }));
-			worksheetOmpu.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						// cell.alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-					}
+				
+				//Pil Ompu
+				worksheetOmpu.columns = [
+					{ header: "KODE", key: "kode", width: 7 },
+					{ header: "LABEL", key: "label", width: 17 }
+				];
+				worksheetOmpu.addRows(await _allOption({ table: models.Ompu }));
+				worksheetOmpu.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
 				});
-			});
 
-			//Pil WilayahPanjaitan
-			worksheetWilayahPanjaitan.columns = [
-				{ header: "KODE", key: "kode", width: 7 },
-				{ header: "LABEL", key: "label", width: 25 }
-			];
-			let WilayahPanjaitan = await _allOption({ table: models.WilayahPanjaitan })
-			if(wilayah === '00'){
-				worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
-			}else{
-				worksheetWilayahPanjaitan.addRows(WilayahPanjaitan.filter(val => val.kode === wilayah));
-			}
-			worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						// cell.alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-					}
+				//Pil WilayahPanjaitan
+				worksheetWilayahPanjaitan.columns = [
+					{ header: "KODE", key: "kode", width: 7 },
+					{ header: "LABEL", key: "label", width: 25 }
+				];
+				let WilayahPanjaitan = await _allOption({ table: models.WilayahPanjaitan })
+				if(wilayah === '00'){
+					worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
+				}else{
+					worksheetWilayahPanjaitan.addRows(WilayahPanjaitan.filter(val => val.kode === wilayah));
+				}
+				worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
 				});
-			});
-			
-			//Pil KomisarisWilayah
-			worksheetKomisarisWilayah.columns = [
-				{ header: "KODE KOMISARIS WILAYAH", key: "kodeKomisarisWilayah", width: 30 },
-				{ header: "KODE WILAYAH", key: "kodeWilayah", width: 20 },
-				{ header: "NAMA KOMISARIS", key: "namaKomisaris", width: 50 },
-				{ header: "DAERAH", key: "daerah", width: 50 }
-			];
-			let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { statusKomisaris: true }, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
-			if(wilayah === '00'){
-				worksheetKomisarisWilayah.addRows(KomisarisWilayah);
-			}else{
-				worksheetKomisarisWilayah.addRows(KomisarisWilayah.filter(val => val.kodeWilayah === wilayah));
-			}
-			worksheetKomisarisWilayah.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
-						row.getCell(4).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-					}
+				
+				//Pil KomisarisWilayah
+				worksheetKomisarisWilayah.columns = [
+					{ header: "KODE KOMISARIS WILAYAH", key: "kodeKomisarisWilayah", width: 30 },
+					{ header: "KODE WILAYAH", key: "kodeWilayah", width: 20 },
+					{ header: "NAMA KOMISARIS", key: "namaKomisaris", width: 50 },
+					{ header: "DAERAH", key: "daerah", width: 50 }
+				];
+				let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { statusKomisaris: true }, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
+				if(wilayah === '00'){
+					worksheetKomisarisWilayah.addRows(KomisarisWilayah);
+				}else{
+					worksheetKomisarisWilayah.addRows(KomisarisWilayah.filter(val => val.kodeWilayah === wilayah));
+				}
+				worksheetKomisarisWilayah.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
+							row.getCell(4).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+						}
+					});
 				});
-			});
 
-			//Pil Provinsi
-			worksheetProvinsi.columns = [
-				{ header: "KODE", key: "kode", width: 20 },
-				{ header: "NAMA PROVINSI", key: "namaWilayah", width: 30 },
-			];
+				//Pil Provinsi
+				worksheetProvinsi.columns = [
+					{ header: "KODE", key: "kode", width: 20 },
+					{ header: "NAMA PROVINSI", key: "namaWilayah", width: 30 },
+				];
 
-			let provinsi = await _wilayah2023Cetak({ models, bagian: 'provinsi', KodeWilayah: '' })
-			worksheetProvinsi.addRows(provinsi);
-			worksheetProvinsi.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-					}
+				let provinsi = await _wilayah2023Cetak({ models, bagian: 'provinsi', KodeWilayah: '' })
+				worksheetProvinsi.addRows(provinsi);
+				worksheetProvinsi.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
 				});
-			});
 
-			//Pil Kabupaten / Kota
-			worksheetKabKota.columns = [
-				{ header: "KODE", key: "kode", width: 20 },
-				{ header: "NAMA KABUPATEN / KOTA", key: "namaWilayah", width: 45 },
-			];
+				//Pil Kabupaten / Kota
+				worksheetKabKota.columns = [
+					{ header: "KODE", key: "kode", width: 20 },
+					{ header: "NAMA KABUPATEN / KOTA", key: "namaWilayah", width: 45 },
+				];
 
-			let kabkota = []
-			await Promise.all(provinsi.map(async val => {
-				let prov = await _wilayah2023Cetak({ models, bagian: 'kabkota', KodeWilayah: val.kode })
-				await prov.map(str => {
-					kabkota.push(str)
+				let kabkota = []
+				await Promise.all(provinsi.map(async val => {
+					let prov = await _wilayah2023Cetak({ models, bagian: 'kabkota', KodeWilayah: val.kode })
+					await prov.map(str => {
+						kabkota.push(str)
+						return kabkota
+					})
 					return kabkota
-				})
-				return kabkota
-			}))
+				}))
 
-			worksheetKabKota.addRows(_.sortBy(kabkota, [function(o) { return o.kode; }]));
-			worksheetKabKota.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-					}
+				worksheetKabKota.addRows(_.sortBy(kabkota, [function(o) { return o.kode; }]));
+				worksheetKabKota.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
 				});
-			});
 
-			//Pil Kecamatan
-			worksheetKecamatan.columns = [
-				{ header: "KODE", key: "kode", width: 20 },
-				{ header: "NAMA KECAMATAN", key: "namaWilayah", width: 35 },
-			];
+				//Pil Kecamatan
+				worksheetKecamatan.columns = [
+					{ header: "KODE", key: "kode", width: 20 },
+					{ header: "NAMA KECAMATAN", key: "namaWilayah", width: 35 },
+				];
 
-			let kecamatan = []
-			await Promise.all(kabkota.map(async val => {
-				let kabkot = await _wilayah2023Cetak({ models, bagian: 'kecamatan', KodeWilayah: val.kode })
-				await kabkot.map(str => {
-					kecamatan.push(str)
+				let kecamatan = []
+				await Promise.all(kabkota.map(async val => {
+					let kabkot = await _wilayah2023Cetak({ models, bagian: 'kecamatan', KodeWilayah: val.kode })
+					await kabkot.map(str => {
+						kecamatan.push(str)
+						return kecamatan
+					})
 					return kecamatan
-				})
-				return kecamatan
-			}))
+				}))
 
-			worksheetKecamatan.addRows(_.sortBy(kecamatan, [function(o) { return o.kode; }]));
-			worksheetKecamatan.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-					}
+				worksheetKecamatan.addRows(_.sortBy(kecamatan, [function(o) { return o.kode; }]));
+				worksheetKecamatan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
 				});
-			});
 
-			//Pil Kelurahan
-			worksheetKelurahan.columns = [
-				{ header: "KODE", key: "kode", width: 20 },
-				{ header: "NAMA KELURAHAN", key: "namaWilayah", width: 35 },
-				{ header: "KODE POS", key: "kodePos", width: 20 },
-			];
+				//Pil Kelurahan
+				worksheetKelurahan.columns = [
+					{ header: "KODE", key: "kode", width: 20 },
+					{ header: "NAMA KELURAHAN", key: "namaWilayah", width: 35 },
+					{ header: "KODE POS", key: "kodePos", width: 20 },
+				];
 
-			let kelurahan = []
-			await Promise.all(kecamatan.map(async val => {
-				let kec = await _wilayah2023Cetak({ models, bagian: 'kelurahan', KodeWilayah: val.kode })
-				await kec.map(str => {
-					kelurahan.push(str)
+				let kelurahan = []
+				await Promise.all(kecamatan.map(async val => {
+					let kec = await _wilayah2023Cetak({ models, bagian: 'kelurahan', KodeWilayah: val.kode })
+					await kec.map(str => {
+						kelurahan.push(str)
+						return kelurahan
+					})
 					return kelurahan
-				})
-				return kelurahan
-			}))
+				}))
 
-			worksheetKelurahan.addRows(_.sortBy(kelurahan, [function(o) { return o.kode; }]));
-			worksheetKelurahan.eachRow({ includeEmpty: true }, function(row, rowNumber){
-				row.eachCell(function(cell, colNumber){
-					if (rowNumber === 1) {
-						row.height = 25;
-						cell.font = { name: 'Times New Normal', size: 11, bold: true };
-						cell.alignment = { vertical: 'middle', horizontal: 'center' };
-					}
-					if (rowNumber > 1) {
-						cell.font = { name: 'Times New Normal', size: 10, bold: false };
-						row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-						row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-						row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
-					}
+				worksheetKelurahan.addRows(_.sortBy(kelurahan, [function(o) { return o.kode; }]));
+				worksheetKelurahan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+							row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+					});
 				});
-			});
 
-			res.setHeader(
-				"Content-Disposition",
-				"attachment; filename=TemplateDataSiswa.xlsx"
-			);
+				res.setHeader(
+					"Content-Disposition",
+					"attachment; filename=TemplateDataSiswa.xlsx"
+				);
 
-			res.setHeader(
-				"Content-Type",
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-			);
-  
-			return workbook.xlsx.write(res).then(function () {
-				res.status(200).end();
-			});
+				res.setHeader(
+					"Content-Type",
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+				);
+		
+				return workbook.xlsx.write(res).then(function () {
+					res.status(200).end();
+				});
+			}else if(kategori === 'rekapmenikah'){
+				let workbook = new excel.Workbook();
+				let worksheetDataRekap = workbook.addWorksheet("DataRekap");
+				let worksheetWilayahPanjaitan = workbook.addWorksheet("Wilayah");
+
+				//Data Rekap
+				worksheetDataRekap.columns = [
+					{ header: "WILAYAH", key: "wilayah", width: 20 },
+					{ header: "TANGGAL", key: "tanggal", width: 20 },
+					{ header: "GOAR NI ULAON", key: "kategori", width: 35 },
+					{ header: "GOAR NI NAMARHASOHOTAN", key: "nama", width: 40 },
+					{ header: "GOAR NI HASUHUTON", key: "orangTuaMenantu", width: 40 },
+					{ header: "GEREJA PAMASUMASUON DOHOT ALAMAN PARPESTAAN", key: "pemberkatan", width: 65 },
+					{ header: "PROTOKOL", key: "penanggungJawab", width: 35 },
+					{ header: "RAJA PARHATA / PARSINABUL", key: "yangMemberiSumbangan", width: 40 },
+					{ header: "HASAHATAN NI ULOS NAMARHADOHOAN / PANANDAION TU PENGURUS", key: "pemberiUlos", width: 85 },
+					{ header: "KETERANGAN", key: "keterangan", width: 50 },
+				];
+
+				worksheetDataRekap.addRows([{
+					wilayah: '03',
+					tanggal: new Date(),
+					kategori: '2M',
+					nama: 'Serma TNI Johan Panjaitan dohot Sapmi Susanti br.Siahaan,SE',
+					orangTuaMenantu: 'Jamiston Panjaitan/ br.Siahaan,S.Pd',
+					pemberkatan: 'Paainton Pukul 09.00 WIB, simpul Paainthon diuduti ma Marhusip dohot Martonggo Raja, Inganan Prumpung Sawah V Rt.014/04 Cipinang Besar Utara Jakarta Timur',
+					penanggungJawab: 'Ketua Wilayah Jakarta Barat',
+					yangMemberiSumbangan: 'Ketua Wilayah Jakarta Barat',
+					pemberiUlos: '-',
+					keterangan: '2M',
+				}]);
+
+				worksheetDataRekap.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(4).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(7).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(8).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(9).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(10).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+						}
+					});
+				});
+
+				//Pil WilayahPanjaitan
+				worksheetWilayahPanjaitan.columns = [
+					{ header: "KODE", key: "kode", width: 7 },
+					{ header: "LABEL", key: "label", width: 25 }
+				];
+				let WilayahPanjaitan = await _allOption({ table: models.WilayahPanjaitan })
+				worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
+				worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
+				});
+
+				res.setHeader(
+					"Content-Disposition",
+					"attachment; filename=TemplateDataSiswa.xlsx"
+				);
+
+				res.setHeader(
+					"Content-Type",
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+				);
+		
+				return workbook.xlsx.write(res).then(function () {
+					res.status(200).end();
+				});
+			}else if(kategori === 'rekapmeninggal'){
+				let workbook = new excel.Workbook();
+				let worksheetDataRekap = workbook.addWorksheet("DataRekap");
+				let worksheetWilayahPanjaitan = workbook.addWorksheet("Wilayah");
+
+				//Data Rekap
+				worksheetDataRekap.columns = [
+					{ header: "WILAYAH", key: "wilayah", width: 20 },
+					{ header: "TANGGAL", key: "tanggal", width: 20 },
+					{ header: "NAMONDING", key: "kategori", width: 35 },
+					{ header: "GOAR NI NAMONDING", key: "nama", width: 40 },
+					{ header: "HASUHUTON / NAMANGHABALUHON", key: "yangDitinggal", width: 50 },
+					{ header: "INGANAN", key: "rumahDuka", width: 40 },
+					{ header: "TONGGO RAJA / PASADA TAHI / ADAT PARTUATNA", key: "acaraAdat", width: 60 },
+					{ header: "PROTOKOL", key: "penanggungJawab", width: 40 },
+					{ header: "RAJA ARHATA / PARSINABUL / NAMANGULUHON", key: "yangMemberiSumbangan", width: 70 },
+					{ header: "KETERANGAN", key: "keterangan", width: 50 },
+				];
+
+				worksheetDataRekap.addRows([{
+					wilayah: '05',
+					tanggal: new Date(),
+					kategori: 'Monding Ina',
+					nama: 'Purnama br.Napitupulu (Op.Eunike boru) 72 tahun',
+					yangDitinggal: 'Pdt.Mangontang SM.Panjaitan (Op.Eunike doli)',
+					rumahDuka: 'Rumah Duka RS UKI Jakarta Timur',
+					acaraAdat: 'Martonggo Raja Rabu, 03/07/24 Pukul 19.00 WIB, Ulaon Adat Partuatna Kamis, 04/07/24 Disuathon di Bona Pasogit Pintu Batu Silaen Toba',
+					penanggungJawab: 'Ketua Wilayah Jakarta Timur-2',
+					yangMemberiSumbangan: 'St.Westerling Panjaitan/br.Manurung (Op.Debora)',
+					keterangan: 'Tanda Duka Cita Rp.500.000,-',
+				}]);
+
+				worksheetDataRekap.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(4).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(7).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(8).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(9).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+							row.getCell(10).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+						}
+					});
+				});
+
+				//Pil WilayahPanjaitan
+				worksheetWilayahPanjaitan.columns = [
+					{ header: "KODE", key: "kode", width: 7 },
+					{ header: "LABEL", key: "label", width: 25 }
+				];
+				let WilayahPanjaitan = await _allOption({ table: models.WilayahPanjaitan })
+				worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
+				worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+					row.eachCell(function(cell, colNumber){
+						if (rowNumber === 1) {
+							row.height = 25;
+							cell.font = { name: 'Times New Normal', size: 11, bold: true };
+							cell.alignment = { vertical: 'middle', horizontal: 'center' };
+						}
+						if (rowNumber > 1) {
+							cell.font = { name: 'Times New Normal', size: 10, bold: false };
+							// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+							row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+						}
+					});
+				});
+
+				res.setHeader(
+					"Content-Disposition",
+					"attachment; filename=TemplateDataSiswa.xlsx"
+				);
+
+				res.setHeader(
+					"Content-Type",
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+				);
+		
+				return workbook.xlsx.write(res).then(function () {
+					res.status(200).end();
+				});
+			}
 	  } catch (err) {
 			  return NOT_FOUND(res, err.message)
 	  }
@@ -1974,396 +2159,787 @@ function importExcel (models) {
 		const dir = req.files[0];
 		let body = req.body
 	  try {
-			let jsonDataInsert = [];
-			let jsonDataAvailable = [];
-			let jsonDataAvailableAnak = [];
-			let jsonBiodata = [];
-			let jsonAnak = [];
+			if(body.kategori === 'datakeanggotaan'){
+				let jsonDataInsert = [];
+				let jsonDataAvailable = [];
+				let jsonDataAvailableAnak = [];
+				let jsonBiodata = [];
+				let jsonAnak = [];
 
-			readXlsxFile(dir.path, { sheet: 'Biodata' }).then(async(rows) => {
-				rows.shift();
-				rows.map(async (row) => {
-					// let tglSuami = row[2].split('/')
-					// let tglIstri = row[13].split('/')
-					let data = {
-						idBiodata: await createKSUID(),
-						triggerBiodata: String(row[0]), 
-						namaSuami: row[1], 
-						tanggalLahirSuami: row[2],
-						// tanggalLahirSuami: convertDate(row[2]),
-						// tanggalLahirSuami: dayjs(`${tglSuami[2]}-${tglSuami[1]}-${tglSuami[0]}`).format('YYYY-MM-DD'),
-						tempatSuami: row[3], 
-						alamat: row[4], 
-						provinsi: row[5], 
-						kabKota: row[6], 
-						kecamatan: row[7], 
-						kelurahan: row[8], 
-						kodePos: row[9],
-						pekerjaanSuami: row[10], 
-						telp: row[11], 
-						namaIstri: row[12], 
-						tempatIstri: row[13], 
-						tanggalLahirIstri: row[14],
-						// tanggalLahirIstri: convertDate(row[14]),
-						// tanggalLahirIstri: dayjs(`${tglIstri[2]}-${tglIstri[1]}-${tglIstri[0]}`).format('YYYY-MM-DD'),
-						pekerjaanIstri: row[15], 
-						telpIstri: row[16], 
-						jabatanPengurus: row[17], 
-						wilayah: row[18], 
-						komisarisWilayah: row[19], 
-						ompu: row[20], 
-						generasi: row[21], 
-						statusSuami: row[22], 
-						statusIstri: row[23],
-					};
-					console.log(row[2], row[14]);
-					jsonBiodata.push(data);
-				});
-
-				readXlsxFile(dir.path, { sheet: 'Anak' }).then(async(rows) => {
+				readXlsxFile(dir.path, { sheet: 'Biodata' }).then(async(rows) => {
 					rows.shift();
 					rows.map(async (row) => {
-						// let tglAnak = row[3].split('/')
+						// let tglSuami = row[2].split('/')
+						// let tglIstri = row[13].split('/')
 						let data = {
-							idAnak: makeRandom(10),
-							triggerAnak: String(row[0]), 
-							namaAnak: row[1], 
-							kategoriAnak: row[2], 
-							tanggalLahir: convertDate(row[3]),
-							statusAnak: row[4], 
-							// tanggalLahir: dayjs(`${tglAnak[2]}-${tglAnak[1]}-${tglAnak[0]}`).format('YYYY-MM-DD'),
+							idBiodata: await createKSUID(),
+							triggerBiodata: String(row[0]), 
+							namaSuami: row[1], 
+							tanggalLahirSuami: row[2],
+							// tanggalLahirSuami: convertDate(row[2]),
+							// tanggalLahirSuami: dayjs(`${tglSuami[2]}-${tglSuami[1]}-${tglSuami[0]}`).format('YYYY-MM-DD'),
+							tempatSuami: row[3], 
+							alamat: row[4], 
+							provinsi: row[5], 
+							kabKota: row[6], 
+							kecamatan: row[7], 
+							kelurahan: row[8], 
+							kodePos: row[9],
+							pekerjaanSuami: row[10], 
+							telp: row[11], 
+							namaIstri: row[12], 
+							tempatIstri: row[13], 
+							tanggalLahirIstri: row[14],
+							// tanggalLahirIstri: convertDate(row[14]),
+							// tanggalLahirIstri: dayjs(`${tglIstri[2]}-${tglIstri[1]}-${tglIstri[0]}`).format('YYYY-MM-DD'),
+							pekerjaanIstri: row[15], 
+							telpIstri: row[16], 
+							jabatanPengurus: row[17], 
+							wilayah: row[18], 
+							komisarisWilayah: row[19], 
+							ompu: row[20], 
+							generasi: row[21], 
+							statusSuami: row[22], 
+							statusIstri: row[23],
 						};
-						jsonAnak.push(data);
+						// console.log(row[2], row[14]);
+						jsonBiodata.push(data);
 					});
 
-					await Promise.all(jsonBiodata.map(async value => {
-						let anak = jsonAnak.filter(f => f.triggerAnak === value.triggerBiodata)
+					readXlsxFile(dir.path, { sheet: 'Anak' }).then(async(rows) => {
+						rows.shift();
+						rows.map(async (row) => {
+							// let tglAnak = row[3].split('/')
+							let data = {
+								idAnak: makeRandom(10),
+								triggerAnak: String(row[0]), 
+								namaAnak: row[1], 
+								kategoriAnak: row[2], 
+								tanggalLahir: convertDate(row[3]),
+								statusAnak: row[4], 
+								// tanggalLahir: dayjs(`${tglAnak[2]}-${tglAnak[1]}-${tglAnak[0]}`).format('YYYY-MM-DD'),
+							};
+							jsonAnak.push(data);
+						});
 
-						let where = {
-							statusBiodata: true,
-							namaLengkap: value.namaSuami,
-							namaIstri: value.namaIstri,
-						}
-						const count = await models.Biodata.count({ where });
+						await Promise.all(jsonBiodata.map(async value => {
+							let anak = jsonAnak.filter(f => f.triggerAnak === value.triggerBiodata)
 
-						if(count){
-							anak.map(val => {
-								jsonDataAvailableAnak.push(val)
-							})
-							jsonDataAvailable.push(value)
-						}else{
-							jsonDataInsert.push({ ...value, anak })
-						}
-					}))
+							let where = {
+								statusBiodata: true,
+								namaLengkap: value.namaSuami,
+								namaIstri: value.namaIstri,
+							}
+							const count = await models.Biodata.count({ where });
 
-					if(jsonDataInsert.length) {
-						const promises = jsonDataInsert.map((str, i) =>
-							new Promise(resolve =>
-								setTimeout(async () => {
-									let kirimdataUser, nik, kirimdataAnak = [];
-									const data = await models.Biodata.findOne({
-										where: { wilayah: str.wilayah, komisarisWilayah: str.komisarisWilayah },
-										attributes: ["nik"],
-										order: [
-											['createdAt', 'DESC'],
-										],
-									});
+							if(count){
+								anak.map(val => {
+									jsonDataAvailableAnak.push(val)
+								})
+								jsonDataAvailable.push(value)
+							}else{
+								jsonDataInsert.push({ ...value, anak })
+							}
+						}))
 
-									if (data) {
-										console.log(data.nik, new Date());
-										let text = data.nik.split('.')[4];
-										nik = `${str.wilayah}.${str.komisarisWilayah}.${str.ompu}${str.generasi}.${(parseInt(text.substr(2)) + 1).toString().padStart(4, '0')}`;
-									} else {
-										nik = `${str.wilayah}.${str.komisarisWilayah}.${str.ompu}${str.generasi}.0001`;
-									}
+						if(jsonDataInsert.length) {
+							const promises = jsonDataInsert.map((str, i) =>
+								new Promise(resolve =>
+									setTimeout(async () => {
+										let kirimdataUser, nik, kirimdataAnak = [];
+										const data = await models.Biodata.findOne({
+											where: { wilayah: str.wilayah, komisarisWilayah: str.komisarisWilayah },
+											attributes: ["nik"],
+											order: [
+												['createdAt', 'DESC'],
+											],
+										});
 
-									kirimdataUser = {
-										idBiodata: str.idBiodata,
-										nik,
-										namaLengkap: str.namaSuami,
-										tempatSuami: str.tempatSuami ? str.tempatSuami : '',
-										tanggalLahirSuami: str.tanggalLahirSuami,
-										alamat: str.alamat,
-										provinsi: str.provinsi,
-										kabKota: str.kabKota,
-										kecamatan: str.kecamatan,
-										kelurahan: str.kelurahan,
-										kodePos: str.kodePos,
-										pekerjaanSuami: str.pekerjaanSuami ? str.pekerjaanSuami : '',
-										telp: str.telp ? str.telp : '',
-										namaIstri: str.namaIstri,
-										tempatIstri: str.tempatIstri,
-										tanggalLahirIstri: str.tanggalLahirIstri,
-										pekerjaanIstri: str.pekerjaanIstri,
-										telpIstri: str.telpIstri,
-										jabatanPengurus: str.jabatanPengurus === null ? '-' : str.jabatanPengurus,
-										wilayah: str.wilayah,
-										komisarisWilayah: str.komisarisWilayah,
-										ompu: str.ompu,
-										generasi: str.generasi,
-										statusSuami: uppercaseLetterFirst(str.statusSuami),
-										tanggalWafatSuami: null,
-										statusIstri: uppercaseLetterFirst(str.statusIstri),
-										tanggalWafatIstri: null,
-										statusBiodata: 1,
-										createBy: body.createupdateBy,
-									}
-			
-									str.anak.map(val => {
-										kirimdataAnak.push({
-											idAnak: val.idAnak,
+										if (data) {
+											// console.log(data.nik, new Date());
+											let text = data.nik.split('.')[4];
+											nik = `${str.wilayah}.${str.komisarisWilayah}.${str.ompu}${str.generasi}.${(parseInt(text.substr(2)) + 1).toString().padStart(4, '0')}`;
+										} else {
+											nik = `${str.wilayah}.${str.komisarisWilayah}.${str.ompu}${str.generasi}.0001`;
+										}
+
+										kirimdataUser = {
 											idBiodata: str.idBiodata,
-											kategoriAnak: uppercaseLetterFirst(val.kategoriAnak),
-											namaAnak: val.namaAnak,
-											tanggalLahir: val.tanggalLahir,
-											statusAnak: val.statusAnak,
+											nik,
+											namaLengkap: str.namaSuami,
+											tempatSuami: str.tempatSuami ? str.tempatSuami : '',
+											tanggalLahirSuami: str.tanggalLahirSuami,
+											alamat: str.alamat,
+											provinsi: str.provinsi,
+											kabKota: str.kabKota,
+											kecamatan: str.kecamatan,
+											kelurahan: str.kelurahan,
+											kodePos: str.kodePos,
+											pekerjaanSuami: str.pekerjaanSuami ? str.pekerjaanSuami : '',
+											telp: str.telp ? str.telp : '',
+											namaIstri: str.namaIstri,
+											tempatIstri: str.tempatIstri,
+											tanggalLahirIstri: str.tanggalLahirIstri,
+											pekerjaanIstri: str.pekerjaanIstri,
+											telpIstri: str.telpIstri,
+											jabatanPengurus: str.jabatanPengurus === null ? '-' : str.jabatanPengurus,
+											wilayah: str.wilayah,
+											komisarisWilayah: str.komisarisWilayah,
+											ompu: str.ompu,
+											generasi: str.generasi,
+											statusSuami: uppercaseLetterFirst(str.statusSuami),
+											tanggalWafatSuami: null,
+											statusIstri: uppercaseLetterFirst(str.statusIstri),
+											tanggalWafatIstri: null,
+											statusBiodata: 1,
+											createBy: body.createupdateBy,
+										}
+				
+										str.anak.map(val => {
+											kirimdataAnak.push({
+												idAnak: val.idAnak,
+												idBiodata: str.idBiodata,
+												kategoriAnak: uppercaseLetterFirst(val.kategoriAnak),
+												namaAnak: val.namaAnak,
+												tanggalLahir: val.tanggalLahir,
+												statusAnak: val.statusAnak,
+											})
 										})
-									})
-									
-									let dataIuran = []
-									let tahun = dayjs().format('YYYY')
-									for (let index = 2024; index <= Number(tahun); index++) {
-										dataIuran.push({
-											tahun: String(index),
-											iuran: {
-												januari: 0,
-												februari: 0,
-												maret: 0,
-												april: 0,
-												mei: 0,
-												juni: 0,
-												juli: 0,
-												agustus: 0,
-												september: 0,
-												oktober: 0,
-												november: 0,
-												desember: 0,
-												total: 0,
-											}
-										})
-									}
+										
+										let dataIuran = []
+										let tahun = dayjs().format('YYYY')
+										for (let index = 2024; index <= Number(tahun); index++) {
+											dataIuran.push({
+												tahun: String(index),
+												iuran: {
+													januari: 0,
+													februari: 0,
+													maret: 0,
+													april: 0,
+													mei: 0,
+													juni: 0,
+													juli: 0,
+													agustus: 0,
+													september: 0,
+													oktober: 0,
+													november: 0,
+													desember: 0,
+													total: 0,
+												}
+											})
+										}
 
-									let kirimdataIuran = {
-										idIuran: makeRandom(10),
-										idBiodata: str.idBiodata,
-										komisarisWilayah: str.komisarisWilayah,
-										iuran: JSON.stringify(dataIuran),
-										totalIuran: 0
-									}
+										let kirimdataIuran = {
+											idIuran: makeRandom(10),
+											idBiodata: str.idBiodata,
+											komisarisWilayah: str.komisarisWilayah,
+											iuran: JSON.stringify(dataIuran),
+											totalIuran: 0
+										}
 
-									await models.Biodata.create(kirimdataUser)
-									await models.Iuran.create(kirimdataIuran)
-									await models.Anak.bulkCreate(kirimdataAnak)
-									// await sequelizeInstance.transaction(async trx => {
-									// 	await models.Biodata.create(kirimdataUser, { transaction: trx })
-									// 	await models.Anak.bulkCreate(kirimdataAnak, { transaction: trx })
-									// })
-									resolve()
-								}, 3000 * jsonDataInsert.length - 3000 * i)
+										await models.Biodata.create(kirimdataUser)
+										await models.Iuran.create(kirimdataIuran)
+										await models.Anak.bulkCreate(kirimdataAnak)
+										// console.log(kirimdataUser);
+										
+
+										resolve()
+									}, 3000 * jsonDataInsert.length - 3000 * i)
+								)
 							)
+							Promise.all(promises).then(() => console.log('done save'))
+						}
+
+						if(jsonDataAvailable.length) {
+							let workbook = new excel.Workbook();
+							let worksheetBiodata = workbook.addWorksheet("Biodata");
+							let worksheetAnak = workbook.addWorksheet("Anak");
+							let worksheetStatus = workbook.addWorksheet("Status");
+							let worksheetOmpu = workbook.addWorksheet("Ompu");
+							let worksheetWilayahPanjaitan = workbook.addWorksheet("Wilayah");
+							let worksheetKomisarisWilayah = workbook.addWorksheet("Komisaris");
+							let worksheetProvinsi = workbook.addWorksheet("Provinsi");
+							let worksheetKabKota = workbook.addWorksheet("Kabupaten - Kota");
+							let worksheetKecamatan = workbook.addWorksheet("Kecamatan");
+							let worksheetKelurahan = workbook.addWorksheet("Kelurahan");
+
+							//Data Keanggotaan
+							worksheetBiodata.columns = [
+								{ header: "triggerbiodata", key: "triggerBiodata", width: 20 },
+								{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
+								{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
+								{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 25 },
+								{ header: "ALAMAT", key: "alamat", width: 45 },
+								{ header: "PROVINSI", key: "provinsi", width: 20 },
+								{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
+								{ header: "KECAMATAN", key: "kecamatan", width: 20 },
+								{ header: "KELURAHAN", key: "kelurahan", width: 20 },
+								{ header: "KODE POS", key: "kodePos", width: 15 },
+								{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
+								{ header: "TELEPON", key: "telp", width: 15 },
+								{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+								{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 25 },
+								{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
+								{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
+								{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 25 },
+								{ header: "WILAYAH", key: "wilayah", width: 15 },
+								{ header: "KOMISARIS WILAYAH", key: "komisarisWilayah", width: 25 },
+								{ header: "OMPU", key: "ompu", width: 10 },
+								{ header: "GENERASI", key: "generasi", width: 15 },
+								{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
+								{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
+							];
+
+							worksheetBiodata.addRows(_.sortBy(jsonDataAvailable, [function(o) { return o.triggerBiodata; }]));
+
+							worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+										row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+										row.getCell(6).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(13).alignment = { vertical: 'middle', horizontal: 'left' };
+										row.getCell(14).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center'};
+										row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+								});
+							});
+
+							//Data Anak
+							worksheetAnak.columns = [
+								{ header: "triggeranak", key: "triggerAnak", width: 17 },
+								{ header: "NAMA ANAK", key: "namaAnak", width: 35 },
+								{ header: "KATEGORI ANAK", key: "kategoriAnak", width: 20 },
+								{ header: "TANGGAL LAHIR", key: "tanggalLahir", width: 20 },
+								{ header: "STATUS ANAK", key: "statusAnak", width: 20 },
+							];
+							worksheetAnak.addRows(_.sortBy(jsonDataAvailableAnak, [function(o) { return o.triggerAnak; }]));
+							worksheetAnak.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+										row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+								});
+							});
+							
+							//Pil Status
+							worksheetStatus.columns = [
+								{ header: "KODE", key: "kode", width: 7 },
+								{ header: "LABEL", key: "label", width: 11 }
+							];
+							worksheetStatus.addRows([
+								{
+									kode: 0,
+									label: 'Hidup',
+								},
+								{
+									kode: 1,
+									label: 'Meninggal',
+								},
+							]);
+							worksheetStatus.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+									}
+								});
+							});
+							
+							//Pil Ompu
+							worksheetOmpu.columns = [
+								{ header: "KODE", key: "kode", width: 7 },
+								{ header: "LABEL", key: "label", width: 17 }
+							];
+							worksheetOmpu.addRows(await _allOption({ table: models.Ompu }));
+							worksheetOmpu.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+									}
+								});
+							});
+
+							//Pil WilayahPanjaitan
+							worksheetWilayahPanjaitan.columns = [
+								{ header: "KODE", key: "kode", width: 7 },
+								{ header: "LABEL", key: "label", width: 25 }
+							];
+							let WilayahPanjaitan = await _allOption({ table: models.WilayahPanjaitan })
+							if(body.wilayah === '00'){
+								worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
+							}else{
+								worksheetWilayahPanjaitan.addRows(WilayahPanjaitan.filter(val => val.kode === wilayah));
+							}
+							worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										// cell.alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+									}
+								});
+							});
+							
+							//Pil KomisarisWilayah
+							worksheetKomisarisWilayah.columns = [
+								{ header: "KODE KOMISARIS WILAYAH", key: "kodeKomisarisWilayah", width: 30 },
+								{ header: "KODE WILAYAH", key: "kodeWilayah", width: 20 },
+								{ header: "NAMA KOMISARIS", key: "namaKomisaris", width: 50 },
+								{ header: "DAERAH", key: "daerah", width: 50 }
+							];
+							let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { statusKomisaris: true }, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
+							if(body.wilayah === '00'){
+								worksheetKomisarisWilayah.addRows(KomisarisWilayah);
+							}else{
+								worksheetKomisarisWilayah.addRows(KomisarisWilayah.filter(val => val.kodeWilayah === wilayah));
+							}
+							worksheetKomisarisWilayah.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
+										row.getCell(4).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+									}
+								});
+							});
+
+							//Pil Provinsi
+							worksheetProvinsi.columns = [
+								{ header: "KODE", key: "kode", width: 20 },
+								{ header: "NAMA PROVINSI", key: "namaWilayah", width: 30 },
+							];
+
+							let provinsi = await _wilayah2023Cetak({ models, bagian: 'provinsi', KodeWilayah: '' })
+							worksheetProvinsi.addRows(provinsi);
+							worksheetProvinsi.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+									}
+								});
+							});
+
+							//Pil Kabupaten / Kota
+							worksheetKabKota.columns = [
+								{ header: "KODE", key: "kode", width: 20 },
+								{ header: "NAMA KABUPATEN / KOTA", key: "namaWilayah", width: 45 },
+							];
+
+							let kabkota = []
+							await Promise.all(provinsi.map(async val => {
+								let prov = await _wilayah2023Cetak({ models, bagian: 'kabkota', KodeWilayah: val.kode })
+								await prov.map(str => {
+									kabkota.push(str)
+									return kabkota
+								})
+								return kabkota
+							}))
+
+							worksheetKabKota.addRows(_.sortBy(kabkota, [function(o) { return o.kode; }]));
+							worksheetKabKota.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+									}
+								});
+							});
+
+							//Pil Kecamatan
+							worksheetKecamatan.columns = [
+								{ header: "KODE", key: "kode", width: 20 },
+								{ header: "NAMA KECAMATAN", key: "namaWilayah", width: 35 },
+							];
+
+							let kecamatan = []
+							await Promise.all(kabkota.map(async val => {
+								let kabkot = await _wilayah2023Cetak({ models, bagian: 'kecamatan', KodeWilayah: val.kode })
+								await kabkot.map(str => {
+									kecamatan.push(str)
+									return kecamatan
+								})
+								return kecamatan
+							}))
+
+							worksheetKecamatan.addRows(_.sortBy(kecamatan, [function(o) { return o.kode; }]));
+							worksheetKecamatan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+									}
+								});
+							});
+
+							//Pil Kelurahan
+							worksheetKelurahan.columns = [
+								{ header: "KODE", key: "kode", width: 20 },
+								{ header: "NAMA KELURAHAN", key: "namaWilayah", width: 35 },
+								{ header: "KODE POS", key: "kodePos", width: 20 },
+							];
+
+							let kelurahan = []
+							await Promise.all(kecamatan.map(async val => {
+								let kec = await _wilayah2023Cetak({ models, bagian: 'kelurahan', KodeWilayah: val.kode })
+								await kec.map(str => {
+									kelurahan.push(str)
+									return kelurahan
+								})
+								return kelurahan
+							}))
+
+							worksheetKelurahan.addRows(_.sortBy(kelurahan, [function(o) { return o.kode; }]));
+							worksheetKelurahan.eachRow({ includeEmpty: true }, function(row, rowNumber){
+								row.eachCell(function(cell, colNumber){
+									if (rowNumber === 1) {
+										row.height = 25;
+										cell.font = { name: 'Times New Normal', size: 11, bold: true };
+										cell.alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+									if (rowNumber > 1) {
+										cell.font = { name: 'Times New Normal', size: 10, bold: false };
+										row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+										row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+										row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+									}
+								});
+							});
+
+							res.setHeader(
+								"Content-Disposition",
+								"attachment; filename=TemplateDataSiswa.xlsx"
+							);
+
+							res.setHeader(
+								"Content-Type",
+								"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							);
+
+							return workbook.xlsx.writeFile(path.join(__dirname, '../public/Data Keanggotaan Already Available.xlsx'))
+							.then(() => {
+								fs.unlinkSync(dir.path);
+								return OK(res, {
+									dataJsonDataInsert: jsonDataInsert,
+									jsonDataInsert: jsonDataInsert.length,
+									dataJsonDataAvailable: jsonDataAvailable,
+									dataJsonDataAvailableAnak: jsonDataAvailableAnak,
+									jsonDataAvailable: jsonDataAvailable.length,
+									jsonData: jsonBiodata.length,
+									path: `${BASE_URL}Data Keanggotaan Already Available.xlsx`,
+								})
+							});
+						}
+
+						fs.unlinkSync(dir.path);
+						return OK(res, {
+							dataJsonDataInsert: jsonDataInsert,
+							jsonDataInsert: jsonDataInsert.length,
+							dataJsonDataAvailable: jsonDataAvailable,
+							dataJsonDataAvailableAnak: jsonDataAvailableAnak,
+							jsonDataAvailable: jsonDataAvailable.length,
+							jsonData: jsonBiodata.length,
+						})
+					});
+				})
+			}else if(body.kategori === 'rekapmenikah'){
+				let jsonRekapData = []
+				readXlsxFile(dir.path, { sheet: 'DataRekap' }).then(async(rows) => {
+					rows.shift();
+					rows.map(async (row) => {
+						let data = {
+							idRekap: makeRandom(10),
+							wilayah: row[0],
+							tanggal: row[1],
+							kategori: row[2],
+							nama: row[3],
+							orangTuaMenantu: row[4],
+							pemberkatan: row[5],
+							penanggungJawab: row[6],
+							yangMemberiSumbangan: row[7],
+							pemberiUlos: row[8],
+							keterangan: row[9],
+						};
+						
+						jsonRekapData.push(data);
+					});
+
+					const promises = jsonRekapData.map((str, i) =>
+						new Promise(resolve =>
+							setTimeout(async () => {
+								let kirimdata = {
+									idRekap: str.idRekap,
+									wilayah: str.wilayah,
+									tanggal: str.tanggal,
+									kategori: str.kategori,
+									nama: str.nama,
+									orangTuaMenantu: str.orangTuaMenantu,
+									pemberkatan: str.pemberkatan,
+									penanggungJawab: str.penanggungJawab,
+									yangMemberiSumbangan: str.yangMemberiSumbangan,
+									pemberiUlos: str.pemberiUlos,
+									keterangan: str.keterangan,
+								}
+		
+								await models.RekapMenikah.create(kirimdata)
+								
+								resolve()
+							}, 2000 * jsonRekapData.length - 2000 * i)
 						)
-						Promise.all(promises).then(() => console.log('done save'))
-					}
+					)
+					Promise.all(promises).then(() => console.log('done save'))
 
-					if(jsonDataAvailable.length) {
-						let workbook = new excel.Workbook();
-						let worksheetBiodata = workbook.addWorksheet("Biodata");
-						let worksheetAnak = workbook.addWorksheet("Anak");
-						let worksheetStatus = workbook.addWorksheet("Status");
-						let worksheetOmpu = workbook.addWorksheet("Ompu");
-						let worksheetWilayahPanjaitan = workbook.addWorksheet("Wilayah");
-						let worksheetKomisarisWilayah = workbook.addWorksheet("Komisaris");
-						let worksheetProvinsi = workbook.addWorksheet("Provinsi");
-						let worksheetKabKota = workbook.addWorksheet("Kabupaten - Kota");
-						let worksheetKecamatan = workbook.addWorksheet("Kecamatan");
-						let worksheetKelurahan = workbook.addWorksheet("Kelurahan");
+					fs.unlinkSync(dir.path);
+					return OK(res, {
+						jsonRekapData,
+						jsonData: jsonRekapData.length })
+				})
+			}else if(body.kategori === 'rekapmeninggal'){
+				let jsonRekapData = []
+				readXlsxFile(dir.path, { sheet: 'DataRekap' }).then(async(rows) => {
+					rows.shift();
+					rows.map(async (row) => {
+						let data = {
+							idRekap: makeRandom(10),
+							wilayah: row[0],
+							tanggal: row[1],
+							kategori: row[2],
+							nama: row[3],
+							yangDitinggal: row[4],
+							rumahDuka: row[5],
+							acaraAdat: row[6],
+							penanggungJawab: row[7],
+							yangMemberiSumbangan: row[8],
+							keterangan: row[9],
+						};
 
+						jsonRekapData.push(data);
+					});
+
+					const promises = jsonRekapData.map((str, i) =>
+						new Promise(resolve =>
+							setTimeout(async () => {
+								let kirimdata = {
+									idRekap: str.idRekap,
+									wilayah: str.wilayah,
+									tanggal: str.tanggal,
+									kategori: str.kategori,
+									nama: str.nama,
+									yangDitinggal: str.yangDitinggal,
+									rumahDuka: str.rumahDuka,
+									acaraAdat: str.acaraAdat,
+									penanggungJawab: str.penanggungJawab,
+									yangMemberiSumbangan: str.yangMemberiSumbangan,
+									keterangan: str.keterangan,
+								}
+		
+								await models.RekapMeninggal.create(kirimdata)
+								
+								resolve()
+							}, 2000 * jsonRekapData.length - 2000 * i)
+						)
+					)
+					Promise.all(promises).then(() => console.log('done save'))
+
+					fs.unlinkSync(dir.path);
+					return OK(res, {
+						jsonRekapData,
+						jsonData: jsonRekapData.length })
+				})
+			}
+	  } catch (err) {
+			return NOT_FOUND(res, err.message)
+	  }
+	}  
+}
+
+function exportExcel (models) {
+	return async (req, res, next) => {
+		let { wilayah, bagian, kategori, startdate, enddate, limit, totalPages } = req.query
+	  try {
+			if(bagian === 'datakeanggotaan'){
+				if(kategori === 'full'){
+					let workbook = new excel.Workbook();
+					let split = wilayah.split(', ')
+					for (let index = 0; index < split.length; index++) {
+						let where = {}
+						if(wilayah){
+							where.wilayah = split[index]
+							where.statusBiodata = true
+						}
+						const dataKeanggotaan = await models.Biodata.findAll({
+							where,
+							include: [
+								{ 
+									model: models.Anak,
+								},
+							],
+							order: [['komisarisWilayah', 'ASC'], ['namaLengkap', 'ASC']],
+						});
+							
+						const result = await Promise.all(dataKeanggotaan.map(async val => {
+							let ompu = await _ompuOption({ models, kode: val.dataValues.ompu })
+							let wilayah = await _wilayahpanjaitanOption({ models, kode: val.dataValues.wilayah })
+							let komisaris_wilayah = await _komisariswilayahOption({ models, kodeKomisarisWilayah: val.dataValues.komisarisWilayah })
+							let provinsi = val.dataValues.provinsi ? await _wilayah2023Option({ models, kode: val.dataValues.provinsi, bagian: 'provinsi' }) : val.dataValues.provinsi
+							let kabkota = val.dataValues.kabKota ? await _wilayah2023Option({ models, kode: val.dataValues.kabKota, bagian: 'kabkota' }) : val.dataValues.kabKota
+							let kecamatan = val.dataValues.kecamatan ? await _wilayah2023Option({ models, kode: val.dataValues.kecamatan, bagian: 'kecamatan' }) : val.dataValues.kecamatan
+							let kelurahan = val.dataValues.kelurahan ? await _wilayah2023Option({ models, kode: val.dataValues.kelurahan, bagian: 'keldes' }) : val.dataValues.kelurahan
+							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? str.tanggalLahir : '-'})`) : []
+							
+							return {
+								idBiodata: val.dataValues.idBiodata,
+								nik: val.dataValues.nik,
+								namaSuami: val.dataValues.namaLengkap,
+								tempatSuami: val.dataValues.tempatSuami ? val.dataValues.tempatSuami : '-',
+								tanggalLahirSuami: val.dataValues.tanggalLahirSuami ? dateconvert(val.dataValues.tanggalLahirSuami) : '-',
+								pekerjaanSuami: val.dataValues.pekerjaanSuami ? val.dataValues.pekerjaanSuami : '-',
+								telp: val.dataValues.telp ? val.dataValues.telp : '-',
+								alamat: val.dataValues.alamat ? val.dataValues.alamat : '-',
+								provinsi: provinsi ? provinsi.dataValues.nama : '-',
+								kabKota: kabkota ? kabkota.dataValues.nama : '-',
+								kecamatan: kecamatan ? kecamatan.dataValues.nama : '-',
+								kelurahan: kelurahan ? kelurahan.dataValues.nama : '-',
+								kodePos: val.dataValues.kodePos ? val.dataValues.kodePos : '-',
+								namaIstri: val.dataValues.namaIstri,
+								tempatIstri: val.dataValues.tempatIstri ? val.dataValues.tempatIstri : '-',
+								tanggalLahirIstri: val.dataValues.tanggalLahirIstri ? dateconvert(val.dataValues.tanggalLahirIstri) : '-',
+								pekerjaanIstri: val.dataValues.pekerjaanIstri ? val.dataValues.pekerjaanIstri : '-',						
+								telpIstri: val.dataValues.telpIstri ? val.dataValues.telpIstri : '-',
+								jabatanPengurus: val.dataValues.jabatanPengurus,
+								wilayah: wilayah.dataValues.label,
+								namaKomisarisWilayah: komisaris_wilayah.dataValues.namaKomisaris,
+								daerah: komisaris_wilayah.dataValues.daerah,
+								ompu: ompu.dataValues.label,
+								generasi: val.dataValues.generasi,
+								statusSuami: val.dataValues.statusSuami,
+								tanggalWafatSuami: val.dataValues.tanggalWafatSuami ? dateconvert(val.dataValues.tanggalWafatSuami) : '-',
+								statusIstri: val.dataValues.statusIstri,
+								tanggalWafatIstri: val.dataValues.tanggalWafatIstri ? dateconvert(val.dataValues.tanggalWafatIstri) : '-',
+								anak: anak.length ? _.join(anak, '\n') : '-',
+							}
+						}))
+						
+						let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
+						let nama_wilayah = wilayah_panjaitan.dataValues.label
+						let worksheetBiodata = workbook.addWorksheet(`${nama_wilayah}`);
+	
 						//Data Keanggotaan
 						worksheetBiodata.columns = [
-							{ header: "triggerbiodata", key: "triggerBiodata", width: 20 },
+							{ header: "idBiodata", key: "idBiodata", width: 30 },
+							{ header: "NO. ANGGOTA", key: "nik", width: 20 },
 							{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
 							{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-							{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 25 },
-							{ header: "ALAMAT", key: "alamat", width: 45 },
+							{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 20 },
+							{ header: "ALAMAT", key: "alamat", width: 30 },
 							{ header: "PROVINSI", key: "provinsi", width: 20 },
 							{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
 							{ header: "KECAMATAN", key: "kecamatan", width: 20 },
 							{ header: "KELURAHAN", key: "kelurahan", width: 20 },
 							{ header: "KODE POS", key: "kodePos", width: 15 },
 							{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
-							{ header: "TELEPON", key: "telp", width: 15 },
+							{ header: "TELEPON SUAMI", key: "telp", width: 20 },
 							{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
-							{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 25 },
+							{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 20 },
 							{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
 							{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
-							{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 25 },
-							{ header: "WILAYAH", key: "wilayah", width: 15 },
-							{ header: "KOMISARIS WILAYAH", key: "komisarisWilayah", width: 25 },
-							{ header: "OMPU", key: "ompu", width: 10 },
+							{ header: "TELEPON ISTRI", key: "telpIstri", width: 20 },
+							{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 30 },
+							{ header: "WILAYAH", key: "wilayah", width: 20 },
+							{ header: "NAMA KOMISARIS WILAYAH", key: "namaKomisarisWilayah", width: 35 },
+							{ header: "DAERAH", key: "daerah", width: 30 },
+							{ header: "OMPU", key: "ompu", width: 20 },
 							{ header: "GENERASI", key: "generasi", width: 15 },
 							{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
+							{ header: "TANGGAL WAFAT SUAMI", key: "tanggalWafatSuami", width: 30 },
 							{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
+							{ header: "TANGGAL WAFAT ISTRI", key: "tanggalWafatIstri", width: 30 },
+							{ header: "TANGGUNGAN", key: "anak", width: 70 },
 						];
-
-						worksheetBiodata.addRows(_.sortBy(jsonDataAvailable, [function(o) { return o.triggerBiodata; }]));
-
+		
+						worksheetBiodata.addRows(result);
+		
 						worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(13).alignment = { vertical: 'middle', horizontal: 'left' };
-									row.getCell(14).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center'};
-									row.getCell(19).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(21).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(22).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-							});
-						});
-
-						//Data Anak
-						worksheetAnak.columns = [
-							{ header: "triggeranak", key: "triggerAnak", width: 17 },
-							{ header: "NAMA ANAK", key: "namaAnak", width: 35 },
-							{ header: "KATEGORI ANAK", key: "kategoriAnak", width: 20 },
-							{ header: "TANGGAL LAHIR", key: "tanggalLahir", width: 20 },
-							{ header: "STATUS ANAK", key: "statusAnak", width: 20 },
-						];
-						worksheetAnak.addRows(_.sortBy(jsonDataAvailableAnak, [function(o) { return o.triggerAnak; }]));
-						worksheetAnak.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-							});
-						});
-						
-						//Pil Status
-						worksheetStatus.columns = [
-							{ header: "KODE", key: "kode", width: 7 },
-							{ header: "LABEL", key: "label", width: 11 }
-						];
-						worksheetStatus.addRows([
-							{
-								kode: 0,
-								label: 'Hidup',
-							},
-							{
-								kode: 1,
-								label: 'Meninggal',
-							},
-						]);
-						worksheetStatus.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									// cell.alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-								}
-							});
-						});
-						
-						//Pil Ompu
-						worksheetOmpu.columns = [
-							{ header: "KODE", key: "kode", width: 7 },
-							{ header: "LABEL", key: "label", width: 17 }
-						];
-						worksheetOmpu.addRows(await _allOption({ table: models.Ompu }));
-						worksheetOmpu.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									// cell.alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-								}
-							});
-						});
-
-						//Pil WilayahPanjaitan
-						worksheetWilayahPanjaitan.columns = [
-							{ header: "KODE", key: "kode", width: 7 },
-							{ header: "LABEL", key: "label", width: 25 }
-						];
-						let WilayahPanjaitan = await _allOption({ table: models.WilayahPanjaitan })
-						if(body.wilayah === '00'){
-							worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
-						}else{
-							worksheetWilayahPanjaitan.addRows(WilayahPanjaitan.filter(val => val.kode === wilayah));
-						}
-						worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									// cell.alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-								}
-							});
-						});
-						
-						//Pil KomisarisWilayah
-						worksheetKomisarisWilayah.columns = [
-							{ header: "KODE KOMISARIS WILAYAH", key: "kodeKomisarisWilayah", width: 30 },
-							{ header: "KODE WILAYAH", key: "kodeWilayah", width: 20 },
-							{ header: "NAMA KOMISARIS", key: "namaKomisaris", width: 50 },
-							{ header: "DAERAH", key: "daerah", width: 50 }
-						];
-						let KomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { statusKomisaris: true }, order: [['kodeWilayah', 'ASC'], ['kodeKomisarisWilayah', 'ASC']] })
-						if(body.wilayah === '00'){
-							worksheetKomisarisWilayah.addRows(KomisarisWilayah);
-						}else{
-							worksheetKomisarisWilayah.addRows(KomisarisWilayah.filter(val => val.kodeWilayah === wilayah));
-						}
-						worksheetKomisarisWilayah.eachRow({ includeEmpty: true }, function(row, rowNumber){
 							row.eachCell(function(cell, colNumber){
 								if (rowNumber === 1) {
 									row.height = 25;
@@ -2375,648 +2951,721 @@ function importExcel (models) {
 									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
 									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
-									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								}
+									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(13).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(14).alignment = { vertical: 'middle', horizontal: 'left' };
+									row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(19).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(21).alignment = { vertical: 'middle', horizontal: 'left' };
+									row.getCell(22).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(25).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(26).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(27).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(28).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(29).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+								 }
 							});
 						});
-
-						//Pil Provinsi
-						worksheetProvinsi.columns = [
-							{ header: "KODE", key: "kode", width: 20 },
-							{ header: "NAMA PROVINSI", key: "namaWilayah", width: 30 },
-						];
-
-						let provinsi = await _wilayah2023Cetak({ models, bagian: 'provinsi', KodeWilayah: '' })
-						worksheetProvinsi.addRows(provinsi);
-						worksheetProvinsi.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-								}
-							});
-						});
-
-						//Pil Kabupaten / Kota
-						worksheetKabKota.columns = [
-							{ header: "KODE", key: "kode", width: 20 },
-							{ header: "NAMA KABUPATEN / KOTA", key: "namaWilayah", width: 45 },
-						];
-
-						let kabkota = []
-						await Promise.all(provinsi.map(async val => {
-							let prov = await _wilayah2023Cetak({ models, bagian: 'kabkota', KodeWilayah: val.kode })
-							await prov.map(str => {
-								kabkota.push(str)
-								return kabkota
-							})
-							return kabkota
-						}))
-
-						worksheetKabKota.addRows(_.sortBy(kabkota, [function(o) { return o.kode; }]));
-						worksheetKabKota.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-								}
-							});
-						});
-
-						//Pil Kecamatan
-						worksheetKecamatan.columns = [
-							{ header: "KODE", key: "kode", width: 20 },
-							{ header: "NAMA KECAMATAN", key: "namaWilayah", width: 35 },
-						];
-
-						let kecamatan = []
-						await Promise.all(kabkota.map(async val => {
-							let kabkot = await _wilayah2023Cetak({ models, bagian: 'kecamatan', KodeWilayah: val.kode })
-							await kabkot.map(str => {
-								kecamatan.push(str)
-								return kecamatan
-							})
-							return kecamatan
-						}))
-
-						worksheetKecamatan.addRows(_.sortBy(kecamatan, [function(o) { return o.kode; }]));
-						worksheetKecamatan.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-								}
-							});
-						});
-
-						//Pil Kelurahan
-						worksheetKelurahan.columns = [
-							{ header: "KODE", key: "kode", width: 20 },
-							{ header: "NAMA KELURAHAN", key: "namaWilayah", width: 35 },
-							{ header: "KODE POS", key: "kodePos", width: 20 },
-						];
-
-						let kelurahan = []
-						await Promise.all(kecamatan.map(async val => {
-							let kec = await _wilayah2023Cetak({ models, bagian: 'kelurahan', KodeWilayah: val.kode })
-							await kec.map(str => {
-								kelurahan.push(str)
-								return kelurahan
-							})
-							return kelurahan
-						}))
-
-						worksheetKelurahan.addRows(_.sortBy(kelurahan, [function(o) { return o.kode; }]));
-						worksheetKelurahan.eachRow({ includeEmpty: true }, function(row, rowNumber){
-							row.eachCell(function(cell, colNumber){
-								if (rowNumber === 1) {
-									row.height = 25;
-									cell.font = { name: 'Times New Normal', size: 11, bold: true };
-									cell.alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-								if (rowNumber > 1) {
-									cell.font = { name: 'Times New Normal', size: 10, bold: false };
-									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
-									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
-								}
-							});
-						});
-
+					
 						res.setHeader(
 							"Content-Disposition",
-							"attachment; filename=TemplateDataSiswa.xlsx"
+							"attachment; filename=ExportSiswa.xlsx"
 						);
-
-						res.setHeader(
-							"Content-Type",
-							"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-						);
-
-						return workbook.xlsx.writeFile(path.join(__dirname, '../public/Data Keanggotaan Already Available.xlsx'))
-						.then(() => {
-							fs.unlinkSync(dir.path);
-							return OK(res, {
-								dataJsonDataInsert: jsonDataInsert,
-								jsonDataInsert: jsonDataInsert.length,
-								dataJsonDataAvailable: jsonDataAvailable,
-								dataJsonDataAvailableAnak: jsonDataAvailableAnak,
-								jsonDataAvailable: jsonDataAvailable.length,
-								jsonData: jsonBiodata.length,
-								path: `${BASE_URL}Data Keanggotaan Already Available.xlsx`,
-							})
-						});
 					}
-
-					fs.unlinkSync(dir.path);
-					return OK(res, {
-						dataJsonDataInsert: jsonDataInsert,
-						jsonDataInsert: jsonDataInsert.length,
-						dataJsonDataAvailable: jsonDataAvailable,
-						dataJsonDataAvailableAnak: jsonDataAvailableAnak,
-						jsonDataAvailable: jsonDataAvailable.length,
-						jsonData: jsonBiodata.length,
-					})
-				});
-			})
-	  } catch (err) {
-			  return NOT_FOUND(res, err.message)
-	  }
-	}  
-}
-
-function exportExcel (models) {
-	return async (req, res, next) => {
-		let { wilayah, kategori, limit, totalPages } = req.query
-	  try {
-			if(kategori === 'full'){
-				let workbook = new excel.Workbook();
-				let split = wilayah.split(', ')
-				for (let index = 0; index < split.length; index++) {
-					let where = {}
-					if(wilayah){
-						where.wilayah = split[index]
-						where.statusBiodata = true
-					}
-					const dataKeanggotaan = await models.Biodata.findAll({
-						where,
-						// attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-						include: [
-							{ 
-								model: models.KomisarisWilayah,
-							},
-							{ 
-								model: models.WilayahPanjaitan,
-							},
-							{ 
-								model: models.Ompu,
-							},
-							{ 
-								model: models.Anak,
-							},
-						],
-						order: [['komisarisWilayah', 'ASC'], ['namaLengkap', 'ASC']],
-					});
-						
-					const result = await Promise.all(dataKeanggotaan.map(async val => {
-						let ompu = await _ompuOption({ models, kode: val.ompu })
-						let wilayah = await _wilayahpanjaitanOption({ models, kode: val.wilayah })
-						let komisaris_wilayah = await _komisariswilayahOption({ models, kodeKomisarisWilayah: val.komisarisWilayah })
-						let provinsi = await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' })
-						let kabkota = await _wilayah2023Option({ models, kode: val.kabKota, bagian: 'kabkota' })
-						let kecamatan = await _wilayah2023Option({ models, kode: val.kecamatan, bagian: 'kecamatan' })
-						let kelurahan = await _wilayah2023Option({ models, kode: val.kelurahan, bagian: 'keldes' })
-						let anak = val.Anaks.length ? val.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir})`) : '-'
-
-						return {
-							idBiodata: val.idBiodata,
-							nik: val.nik,
-							namaSuami: val.namaLengkap,
-							tempatSuami: val.tempatSuami ? val.tempatSuami : '-',
-							tanggalLahirSuami: val.tanggalLahirSuami ? dateconvert(val.tanggalLahirSuami) : '-',
-							pekerjaanSuami: val.pekerjaanSuami ? val.pekerjaanSuami : '-',
-							telp: val.telp ? val.telp : '-',
-							alamat: val.alamat,
-							provinsi: val.provinsi ? provinsi.dataValues.nama : provinsi.dataValues.kode,
-							kabKota: val.kabKota ? kabkota.dataValues.nama : kabkota.dataValues.kode,
-							kecamatan: val.kecamatan ? kecamatan.dataValues.nama : kecamatan.dataValues.kode,
-							kelurahan: val.kelurahan ? kelurahan.dataValues.nama : kelurahan.dataValues.kode,
-							kodePos: val.kodePos,
-							namaIstri: val.namaIstri,
-							tempatIstri: val.tempatIstri ? val.tempatIstri : '-',
-							tanggalLahirIstri: val.tanggalLahirIstri ? dateconvert(val.tanggalLahirIstri) : '-',
-							pekerjaanIstri: val.pekerjaanIstri ? val.pekerjaanIstri : '-',						
-							telpIstri: val.telpIstri ? val.telpIstri : '-',
-							jabatanPengurus: val.jabatanPengurus,
-							wilayah: val.wilayah ? wilayah.dataValues.label : wilayah.dataValues.kode,
-							namaKomisarisWilayah: val.komisarisWilayah ? komisaris_wilayah.dataValues.namaKomisaris : '-',
-							daerah: val.komisarisWilayah ? komisaris_wilayah.dataValues.daerah : '-',
-							ompu: val.ompu ? ompu.dataValues.label : ompu.dataValues.kode,
-							generasi: val.generasi,
-							statusSuami: val.statusSuami,
-							tanggalWafatSuami: val.tanggalWafatSuami ? dateconvert(val.tanggalWafatSuami) : '-',
-							statusIstri: val.statusIstri,
-							tanggalWafatIstri: val.tanggalWafatIstri ? dateconvert(val.tanggalWafatIstri) : '-',
-							anak: val.Anaks.length ? _.join(anak, '\n') : '-',
-						}
-					}))
-					
-					let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
-					let nama_wilayah = wilayah_panjaitan.dataValues.label
-					let worksheetBiodata = workbook.addWorksheet(`${nama_wilayah}`);
-	
-					//Data Keanggotaan
-					worksheetBiodata.columns = [
-						{ header: "idBiodata", key: "idBiodata", width: 30 },
-						{ header: "NO. ANGGOTA", key: "nik", width: 20 },
-						{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
-						{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-						{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 20 },
-						{ header: "ALAMAT", key: "alamat", width: 30 },
-						{ header: "PROVINSI", key: "provinsi", width: 20 },
-						{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
-						{ header: "KECAMATAN", key: "kecamatan", width: 20 },
-						{ header: "KELURAHAN", key: "kelurahan", width: 20 },
-						{ header: "KODE POS", key: "kodePos", width: 15 },
-						{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
-						{ header: "TELEPON SUAMI", key: "telp", width: 20 },
-						{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
-						{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 20 },
-						{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
-						{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
-						{ header: "TELEPON ISTRI", key: "telpIstri", width: 20 },
-						{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 30 },
-						{ header: "WILAYAH", key: "wilayah", width: 20 },
-						{ header: "NAMA KOMISARIS WILAYAH", key: "namaKomisarisWilayah", width: 35 },
-						{ header: "DAERAH", key: "daerah", width: 30 },
-						{ header: "OMPU", key: "ompu", width: 20 },
-						{ header: "GENERASI", key: "generasi", width: 15 },
-						{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
-						{ header: "TANGGAL WAFAT SUAMI", key: "tanggalWafatSuami", width: 30 },
-						{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
-						{ header: "TANGGAL WAFAT ISTRI", key: "tanggalWafatIstri", width: 30 },
-						{ header: "TANGGUNGAN", key: "anak", width: 70 },
-					];
-	
-					worksheetBiodata.addRows(result);
-	
-					worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
-						row.eachCell(function(cell, colNumber){
-							if (rowNumber === 1) {
-								row.height = 25;
-								cell.font = { name: 'Times New Normal', size: 11, bold: true };
-								cell.alignment = { vertical: 'middle', horizontal: 'center' };
-							}
-							if (rowNumber > 1) {
-								cell.font = { name: 'Times New Normal', size: 10, bold: false };
-								row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(6).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(13).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(14).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(19).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(21).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(22).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(25).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(26).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(27).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(28).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(29).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-							 }
-						});
-					});
-				
 					res.setHeader(
-						"Content-Disposition",
-						"attachment; filename=ExportSiswa.xlsx"
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 					);
-				}
-				res.setHeader(
-					"Content-Type",
-					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-				);
-		
-				return workbook.xlsx.write(res).then(function () {
-					res.status(200).end();
-				});
-			}else if(kategori === 'by'){
-				let workbook = new excel.Workbook();
-				for (let page = 1; page <= parseInt(totalPages); page++) {
-					const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-					let where = {}
-					if(wilayah){
-						where.wilayah = wilayah
-						where.statusBiodata = true
-					}
-					const dataKeanggotaan = await models.Biodata.findAll({
-						where,
-						// attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-						include: [
-							{ 
-								model: models.KomisarisWilayah,
-							},
-							{ 
-								model: models.WilayahPanjaitan,
-							},
-							{ 
-								model: models.Ompu,
-							},
-							{ 
-								model: models.Anak,
-							},
-						],
-						order: [['komisarisWilayah', 'ASC'], ['namaLengkap', 'ASC']],
-						limit: parseInt(limit),
-						offset: OFFSET,
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
 					});
-
-					const result = await Promise.all(dataKeanggotaan.map(async val => {
-						let ompu = await _ompuOption({ models, kode: val.ompu })
-						let wilayah = await _wilayahpanjaitanOption({ models, kode: val.wilayah })
-						let komisaris_wilayah = await _komisariswilayahOption({ models, kodeKomisarisWilayah: val.komisarisWilayah })
-						let provinsi = await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' })
-						let kabkota = await _wilayah2023Option({ models, kode: val.kabKota, bagian: 'kabkota' })
-						let kecamatan = await _wilayah2023Option({ models, kode: val.kecamatan, bagian: 'kecamatan' })
-						let kelurahan = await _wilayah2023Option({ models, kode: val.kelurahan, bagian: 'keldes' })
-						let anak = val.Anaks.length ? val.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir})`) : '-'
-	
-						return {
-							idBiodata: val.idBiodata,
-							nik: val.nik,
-							namaSuami: val.namaLengkap,
-							tempatSuami: val.tempatSuami ? val.tempatSuami : '-',
-							tanggalLahirSuami: val.tanggalLahirSuami ? dateconvert(val.tanggalLahirSuami) : '-',
-							pekerjaanSuami: val.pekerjaanSuami ? val.pekerjaanSuami : '-',
-							telp: val.telp ? val.telp : '-',
-							alamat: val.alamat,
-							provinsi: val.provinsi ? provinsi.dataValues.nama : provinsi.dataValues.kode,
-							kabKota: val.kabKota ? kabkota.dataValues.nama : kabkota.dataValues.kode,
-							kecamatan: val.kecamatan ? kecamatan.dataValues.nama : kecamatan.dataValues.kode,
-							kelurahan: val.kelurahan ? kelurahan.dataValues.nama : kelurahan.dataValues.kode,
-							kodePos: val.kodePos,
-							namaIstri: val.namaIstri,
-							tempatIstri: val.tempatIstri ? val.tempatIstri : '-',
-							tanggalLahirIstri: val.tanggalLahirIstri ? dateconvert(val.tanggalLahirIstri) : '-',
-							pekerjaanIstri: val.pekerjaanIstri ? val.pekerjaanIstri : '-',						
-							telpIstri: val.telpIstri ? val.telpIstri : '-',
-							jabatanPengurus: val.jabatanPengurus,
-							wilayah: val.wilayah ? wilayah.dataValues.label : wilayah.dataValues.kode,
-							namaKomisarisWilayah: val.komisarisWilayah ? komisaris_wilayah.dataValues.namaKomisaris : '-',
-							daerah: val.komisarisWilayah ? komisaris_wilayah.dataValues.daerah : '-',
-							ompu: val.ompu ? ompu.dataValues.label : ompu.dataValues.kode,
-							generasi: val.generasi,
-							statusSuami: val.statusSuami,
-							tanggalWafatSuami: val.tanggalWafatSuami ? dateconvert(val.tanggalWafatSuami) : '-',
-							statusIstri: val.statusIstri,
-							tanggalWafatIstri: val.tanggalWafatIstri ? dateconvert(val.tanggalWafatIstri) : '-',
-							anak: val.Anaks.length ? _.join(anak, '\n') : '-',
+				}else if(kategori === 'by'){
+					let workbook = new excel.Workbook();
+					for (let page = 1; page <= parseInt(totalPages); page++) {
+						const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+						let where = {}
+						if(wilayah){
+							where.wilayah = wilayah
+							where.statusBiodata = true
 						}
-					}))
-		
-					let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: wilayah })
-					let nama_wilayah = wilayah_panjaitan.dataValues.label
-					let worksheetBiodata = workbook.addWorksheet(`${nama_wilayah} - Page ${page}`);
-	
-					//Data Keanggotaan
-					worksheetBiodata.columns = [
-						{ header: "idBiodata", key: "idBiodata", width: 30 },
-						{ header: "NO. ANGGOTA", key: "nik", width: 20 },
-						{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
-						{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
-						{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 20 },
-						{ header: "ALAMAT", key: "alamat", width: 30 },
-						{ header: "PROVINSI", key: "provinsi", width: 20 },
-						{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
-						{ header: "KECAMATAN", key: "kecamatan", width: 20 },
-						{ header: "KELURAHAN", key: "kelurahan", width: 20 },
-						{ header: "KODE POS", key: "kodePos", width: 15 },
-						{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
-						{ header: "TELEPON SUAMI", key: "telp", width: 20 },
-						{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
-						{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 20 },
-						{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
-						{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
-						{ header: "TELEPON ISTRI", key: "telpIstri", width: 20 },
-						{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 30 },
-						{ header: "WILAYAH", key: "wilayah", width: 20 },
-						{ header: "NAMA KOMISARIS WILAYAH", key: "namaKomisarisWilayah", width: 35 },
-						{ header: "DAERAH", key: "daerah", width: 30 },
-						{ header: "OMPU", key: "ompu", width: 20 },
-						{ header: "GENERASI", key: "generasi", width: 15 },
-						{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
-						{ header: "TANGGAL WAFAT SUAMI", key: "tanggalWafatSuami", width: 30 },
-						{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
-						{ header: "TANGGAL WAFAT ISTRI", key: "tanggalWafatIstri", width: 30 },
-						{ header: "TANGGUNGAN", key: "anak", width: 70 },
-					];
-	
-					worksheetBiodata.addRows(result);
-	
-					worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
-						row.eachCell(function(cell, colNumber){
-							if (rowNumber === 1) {
-								row.height = 25;
-								cell.font = { name: 'Times New Normal', size: 11, bold: true };
-								cell.alignment = { vertical: 'middle', horizontal: 'center' };
-							}
-							if (rowNumber > 1) {
-								cell.font = { name: 'Times New Normal', size: 10, bold: false };
-								row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(6).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(13).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(14).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(19).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(21).alignment = { vertical: 'middle', horizontal: 'left' };
-								row.getCell(22).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(25).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(26).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(27).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(28).alignment = { vertical: 'middle', horizontal: 'center' };
-								row.getCell(29).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-							 }
+						const dataKeanggotaan = await models.Biodata.findAll({
+							where,
+							include: [
+								{ 
+									model: models.Anak,
+								},
+							],
+							order: [['komisarisWilayah', 'ASC'], ['namaLengkap', 'ASC']],
+							limit: parseInt(limit),
+							offset: OFFSET,
 						});
-					});
-				
-					res.setHeader(
-						"Content-Disposition",
-						"attachment; filename=ExportSiswa.xlsx"
-					);
-				}
-				res.setHeader(
-					"Content-Type",
-					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-				);
-		
-				return workbook.xlsx.write(res).then(function () {
-					res.status(200).end();
-				});
-			}else if(kategori === 'komisaris'){
-				let workbook = new excel.Workbook();
-				const dataKomisaris = await models.KomisarisWilayah.findAll({
-					where: {
-						kodeWilayah: wilayah,
-						statusKomisaris: true
-					},
-					order: [['kodeKomisarisWilayah', 'ASC']],
-				});
-
-				let dataTampung = dataKomisaris.map(val => {
-					return {
-						kodeKomisarisWilayah: val.kodeKomisarisWilayah,
-						namaKomisaris: val.namaKomisaris,
-						daerah: val.daerah,
-					}
-				})
-
-				
-				for (let index = 0; index < dataTampung.length; index++) {
-					const dataAnggota = await models.Biodata.findAll({
-						where: { komisarisWilayah: dataTampung[index].kodeKomisarisWilayah },
-						include: [
-							{ 
-								model: models.Anak,
-							},
-						],
-					});
-
-					const cekDataAnggota = async (data) => {
-						let hasil = await Promise.all(data.map(val => {
-							let nikBayangan = val.nik.split('.')[4]
-							return { ...val.dataValues, nikBayangan }
-						}))
 	
-						return _.orderBy(hasil, ['nikBayangan'], ['asc']);
-					}
-
-					const dataKeanggotaan = await cekDataAnggota(dataAnggota);
-					const result = await Promise.all(dataKeanggotaan.map(async (val, i) => {
-						let provinsi = await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' })
-						let kabkota = await _wilayah2023Option({ models, kode: val.kabKota, bagian: 'kabkota' })
-						let kecamatan = await _wilayah2023Option({ models, kode: val.kecamatan, bagian: 'kecamatan' })
-						let kelurahan = await _wilayah2023Option({ models, kode: val.kelurahan, bagian: 'keldes' })
-						const tanggungan = val.Anaks.length ? _.sortBy(val.Anaks, [function(o) { return o.tanggalLahir; }]) : []
-						let anak = tanggungan.length ? tanggungan.filter(str => str.statusAnak === 'Hidup').map((value, i) => `${++i}. ${value.namaAnak} - ${value.kategoriAnak} (${convertDateTime3(value.tanggalLahir)})`) : '-'
-						
-						return {
-							nourut: `${setNum(++i)}\n${val.ompu}${val.generasi}`,
-							nik: val.nik,
-							nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''}`,
-							tanggungan: val.Anaks.length ? _.join(anak, '\n') : '-',
-							alamat: `${val.alamat}${val.kelurahan ? `, ${kelurahan.dataValues.jenisKelDes} ${kelurahan.dataValues.nama}` : ''}${val.kecamatan ? `, Kecamatan ${kecamatan.dataValues.nama}` : ''}${val.kabKota ? `, ${kabkota.dataValues.jenisKabKota} ${kabkota.dataValues.nama}` : ''}${val.provinsi ? `, ${provinsi.dataValues.nama}` : ''} ${val.kodePos}\nTelp: ${val.statusSuami === 'Meninggal' ? val.telpIstri : val.telp}`,
-						}
-					}))
-					const data = {
-						dataBiodata: result.length ? result : [
-							{
-								nourut: '',
-								nik: '',
-								nama: '',
-								tanggungan: '',
-								alamat: '',
-							}
-						],
-					};
-
-					let worksheetBiodata = workbook.addWorksheet(`${dataTampung[index].kodeKomisarisWilayah}`);
-
-					worksheetBiodata.getCell('A1').value = 'Nama Komisaris';
-					worksheetBiodata.getCell('A1').font = { name: 'Times New Normal', size: 11, bold: true };
-					worksheetBiodata.getCell('B1').value = `${dataTampung[index].namaKomisaris}`;
-					worksheetBiodata.getCell('B1').font = { name: 'Times New Normal', size: 11, bold: true };
-					worksheetBiodata.getCell('A2').value = 'Daerah Komisaris';
-					worksheetBiodata.getCell('A2').font = { name: 'Times New Normal', size: 11, bold: true };
-					worksheetBiodata.getCell('B2').value = `${dataTampung[index].daerah}`;
-					worksheetBiodata.getCell('B2').font = { name: 'Times New Normal', size: 11, bold: true };
-
-					worksheetBiodata.addRow([]);
-					Object.keys(data).forEach(sectionKey => {
-						const sectionData = data[sectionKey];
-
-						const tableHeader = worksheetBiodata.addRow(Object.keys(sectionData[0]));
-						tableHeader.eachCell((cell, colNumber) => {
-							cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-							cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } };
-							// cell.font = { bold: true };
-							cell.font = { name: 'Times New Normal', size: 11, bold: true };
-							cell.alignment = { vertical: 'middle', horizontal: 'center' };
-							worksheetBiodata.getRow(4).height = 25;
-							worksheetBiodata.getColumn(1).width = 25;
-							worksheetBiodata.getColumn(2).width = 25;
-							worksheetBiodata.getColumn(3).width = 30;
-							worksheetBiodata.getColumn(4).width = 40;
-							worksheetBiodata.getColumn(5).width = 70;
-
-							worksheetBiodata.getCell('A4').value = 'No. Urut PSO Sundut';
-							worksheetBiodata.getCell('B4').value = 'No. Anggota';
-							worksheetBiodata.getCell('C4').value = 'Goarni Ama/Ina Panggoaran';
-							worksheetBiodata.getCell('D4').value = 'Lanakhon/Tanggungan';
-							worksheetBiodata.getCell('E4').value = 'Alamat';
+						const result = await Promise.all(dataKeanggotaan.map(async val => {
+							let ompu = await _ompuOption({ models, kode: val.dataValues.ompu })
+							let wilayah = await _wilayahpanjaitanOption({ models, kode: val.dataValues.wilayah })
+							let komisaris_wilayah = await _komisariswilayahOption({ models, kodeKomisarisWilayah: val.dataValues.komisarisWilayah })
+							let provinsi = val.dataValues.provinsi ? await _wilayah2023Option({ models, kode: val.dataValues.provinsi, bagian: 'provinsi' }) : val.dataValues.provinsi
+							let kabkota = val.dataValues.kabKota ? await _wilayah2023Option({ models, kode: val.dataValues.kabKota, bagian: 'kabkota' }) : val.dataValues.kabKota
+							let kecamatan = val.dataValues.kecamatan ? await _wilayah2023Option({ models, kode: val.dataValues.kecamatan, bagian: 'kecamatan' }) : val.dataValues.kecamatan
+							let kelurahan = val.dataValues.kelurahan ? await _wilayah2023Option({ models, kode: val.dataValues.kelurahan, bagian: 'keldes' }) : val.dataValues.kelurahan
+							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? str.tanggalLahir : '-'})`) : []
 							
-						});
-
-						sectionData.forEach(item => {
-							const rowData = Object.values(item);
-							const row = worksheetBiodata.addRow(rowData);
-							row.eachCell((cell, colNumber) => {
-								cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-								cell.font = { name: 'Times New Normal', size: 10, bold: false };
-								if (colNumber >= 3 && colNumber <= 5) {
-									cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-								}else{
-									cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+							return {
+								idBiodata: val.dataValues.idBiodata,
+								nik: val.dataValues.nik,
+								namaSuami: val.dataValues.namaLengkap,
+								tempatSuami: val.dataValues.tempatSuami ? val.dataValues.tempatSuami : '-',
+								tanggalLahirSuami: val.dataValues.tanggalLahirSuami ? dateconvert(val.dataValues.tanggalLahirSuami) : '-',
+								pekerjaanSuami: val.dataValues.pekerjaanSuami ? val.dataValues.pekerjaanSuami : '-',
+								telp: val.dataValues.telp ? val.dataValues.telp : '-',
+								alamat: val.dataValues.alamat ? val.dataValues.alamat : '-',
+								provinsi: provinsi ? provinsi.dataValues.nama : '-',
+								kabKota: kabkota ? kabkota.dataValues.nama : '-',
+								kecamatan: kecamatan ? kecamatan.dataValues.nama : '-',
+								kelurahan: kelurahan ? kelurahan.dataValues.nama : '-',
+								kodePos: val.dataValues.kodePos ? val.dataValues.kodePos : '-',
+								namaIstri: val.dataValues.namaIstri,
+								tempatIstri: val.dataValues.tempatIstri ? val.dataValues.tempatIstri : '-',
+								tanggalLahirIstri: val.dataValues.tanggalLahirIstri ? dateconvert(val.dataValues.tanggalLahirIstri) : '-',
+								pekerjaanIstri: val.dataValues.pekerjaanIstri ? val.dataValues.pekerjaanIstri : '-',						
+								telpIstri: val.dataValues.telpIstri ? val.dataValues.telpIstri : '-',
+								jabatanPengurus: val.dataValues.jabatanPengurus,
+								wilayah: wilayah.dataValues.label,
+								namaKomisarisWilayah: komisaris_wilayah.dataValues.namaKomisaris,
+								daerah: komisaris_wilayah.dataValues.daerah,
+								ompu: ompu.dataValues.label,
+								generasi: val.dataValues.generasi,
+								statusSuami: val.dataValues.statusSuami,
+								tanggalWafatSuami: val.dataValues.tanggalWafatSuami ? dateconvert(val.dataValues.tanggalWafatSuami) : '-',
+								statusIstri: val.dataValues.statusIstri,
+								tanggalWafatIstri: val.dataValues.tanggalWafatIstri ? dateconvert(val.dataValues.tanggalWafatIstri) : '-',
+								anak: anak.length ? _.join(anak, '\n') : '-',
+							}
+						}))
+			
+						let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: wilayah })
+						let nama_wilayah = wilayah_panjaitan.dataValues.label
+						let worksheetBiodata = workbook.addWorksheet(`${nama_wilayah} - Page ${page}`);
+		
+						//Data Keanggotaan
+						worksheetBiodata.columns = [
+							{ header: "idBiodata", key: "idBiodata", width: 30 },
+							{ header: "NO. ANGGOTA", key: "nik", width: 20 },
+							{ header: "NAMA SUAMI", key: "namaSuami", width: 35 },
+							{ header: "TANGGAL LAHIR SUAMI", key: "tanggalLahirSuami", width: 30 },
+							{ header: "TEMPAT SUAMI", key: "tempatSuami", width: 20 },
+							{ header: "ALAMAT", key: "alamat", width: 30 },
+							{ header: "PROVINSI", key: "provinsi", width: 20 },
+							{ header: "KABUPATEN / KOTA", key: "kabKota", width: 25 },
+							{ header: "KECAMATAN", key: "kecamatan", width: 20 },
+							{ header: "KELURAHAN", key: "kelurahan", width: 20 },
+							{ header: "KODE POS", key: "kodePos", width: 15 },
+							{ header: "PEKERJAAN SUAMI", key: "pekerjaanSuami", width: 25 },
+							{ header: "TELEPON SUAMI", key: "telp", width: 20 },
+							{ header: "NAMA ISTRI", key: "namaIstri", width: 35 },
+							{ header: "TEMPAT ISTRI", key: "tempatIstri", width: 20 },
+							{ header: "TANGGAL LAHIR ISTRI", key: "tanggalLahirIstri", width: 30 },
+							{ header: "PEKERJAAN ISTRI", key: "pekerjaanIstri", width: 25 },
+							{ header: "TELEPON ISTRI", key: "telpIstri", width: 20 },
+							{ header: "JABATAN PENGURUS", key: "jabatanPengurus", width: 30 },
+							{ header: "WILAYAH", key: "wilayah", width: 20 },
+							{ header: "NAMA KOMISARIS WILAYAH", key: "namaKomisarisWilayah", width: 35 },
+							{ header: "DAERAH", key: "daerah", width: 30 },
+							{ header: "OMPU", key: "ompu", width: 20 },
+							{ header: "GENERASI", key: "generasi", width: 15 },
+							{ header: "STATUS SUAMI", key: "statusSuami", width: 20 },
+							{ header: "TANGGAL WAFAT SUAMI", key: "tanggalWafatSuami", width: 30 },
+							{ header: "STATUS ISTRI", key: "statusIstri", width: 20 },
+							{ header: "TANGGAL WAFAT ISTRI", key: "tanggalWafatIstri", width: 30 },
+							{ header: "TANGGUNGAN", key: "anak", width: 70 },
+						];
+		
+						worksheetBiodata.addRows(result);
+		
+						worksheetBiodata.eachRow({ includeEmpty: true }, function(row, rowNumber){
+							row.eachCell(function(cell, colNumber){
+								if (rowNumber === 1) {
+									row.height = 25;
+									cell.font = { name: 'Times New Normal', size: 11, bold: true };
+									cell.alignment = { vertical: 'middle', horizontal: 'center' };
 								}
+								if (rowNumber > 1) {
+									cell.font = { name: 'Times New Normal', size: 10, bold: false };
+									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'left' };
+									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(13).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(14).alignment = { vertical: 'middle', horizontal: 'left' };
+									row.getCell(15).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(16).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(17).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(18).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(19).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(20).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(21).alignment = { vertical: 'middle', horizontal: 'left' };
+									row.getCell(22).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(23).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(24).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(25).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(26).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(27).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(28).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(29).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+								 }
 							});
 						});
-					});
-
+					
+						res.setHeader(
+							"Content-Disposition",
+							"attachment; filename=ExportSiswa.xlsx"
+						);
+					}
 					res.setHeader(
-						"Content-Disposition",
-						"attachment; filename=ExportSiswa.xlsx"
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 					);
-				}
-
-				res.setHeader(
-					"Content-Type",
-					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-				);
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
+					});
+				}else if(kategori === 'komisaris'){
+					let workbook = new excel.Workbook();
+					const dataKomisaris = await models.KomisarisWilayah.findAll({
+						where: {
+							kodeWilayah: wilayah,
+							statusKomisaris: true
+						},
+						order: [['kodeKomisarisWilayah', 'ASC']],
+					});
+	
+					let dataTampung = dataKomisaris.map(val => {
+						return {
+							kodeKomisarisWilayah: val.kodeKomisarisWilayah,
+							namaKomisaris: val.namaKomisaris,
+							daerah: val.daerah,
+						}
+					})
+	
+					
+					for (let index = 0; index < dataTampung.length; index++) {
+						const dataAnggota = await models.Biodata.findAll({
+							where: { komisarisWilayah: dataTampung[index].kodeKomisarisWilayah },
+							include: [
+								{ 
+									model: models.Anak,
+								},
+							],
+						});
+	
+						const cekDataAnggota = async (data) => {
+							let hasil = await Promise.all(data.map(val => {
+								let nikBayangan = val.nik.split('.')[4]
+								return { ...val.dataValues, nikBayangan }
+							}))
 		
-				return workbook.xlsx.write(res).then(function () {
-					res.status(200).end();
-				});
+							return _.orderBy(hasil, ['nikBayangan'], ['asc']);
+						}
+	
+						const dataKeanggotaan = await cekDataAnggota(dataAnggota);
+						const result = await Promise.all(dataKeanggotaan.map(async (val, i) => {
+							let provinsi = val.provinsi ? await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' }) : val.provinsi
+							let kabkota = val.kabKota ? await _wilayah2023Option({ models, kode: val.kabKota, bagian: 'kabkota' }) : val.kabKota
+							let kecamatan = val.kecamatan ? await _wilayah2023Option({ models, kode: val.kecamatan, bagian: 'kecamatan' }) : val.kecamatan
+							let kelurahan = val.kelurahan ? await _wilayah2023Option({ models, kode: val.kelurahan, bagian: 'keldes' }) : val.kelurahan
+							const tanggungan = val.Anaks.length ? _.sortBy(val.Anaks, [function(o) { return o.tanggalLahir; }]) : []
+							let anak = tanggungan.length ? tanggungan.filter(str => str.statusAnak === 'Hidup').map((value, i) => `${++i}. ${value.namaAnak} - ${value.kategoriAnak} (${value.tanggalLahir ? convertDateTime3(value.tanggalLahir) : '-'})`) : '-'
+							
+							return {
+								nourut: `${setNum(++i)}\n${val.ompu}${val.generasi}`,
+								nik: val.nik,
+								nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''}`,
+								tanggungan: val.Anaks.length ? _.join(anak, '\n') : '-',
+								alamat: `${val.alamat ? val.alamat : '-'}${kelurahan ? `, ${kelurahan.dataValues.jenisKelDes} ${kelurahan.dataValues.nama}` : ''}${kecamatan ? `, Kecamatan ${kecamatan.dataValues.nama}` : ''}${kabkota ? `, ${kabkota.dataValues.jenisKabKota} ${kabkota.dataValues.nama}` : ''}${provinsi ? `, ${provinsi.dataValues.nama}` : ''} ${val.kodePos ? val.kodePos : ''}\nTelp: ${val.statusSuami === 'Meninggal' ? val.telpIstri ? val.telpIstri : '-' : val.telp ? val.telp : '-'}`,
+							}
+						}))
+						const data = {
+							dataBiodata: result.length ? result : [
+								{
+									nourut: '',
+									nik: '',
+									nama: '',
+									tanggungan: '',
+									alamat: '',
+								}
+							],
+						};
+	
+						let worksheetBiodata = workbook.addWorksheet(`${dataTampung[index].kodeKomisarisWilayah}`);
+	
+						worksheetBiodata.getCell('A1').value = 'Nama Komisaris';
+						worksheetBiodata.getCell('A1').font = { name: 'Times New Normal', size: 11, bold: true };
+						worksheetBiodata.getCell('B1').value = `${dataTampung[index].namaKomisaris}`;
+						worksheetBiodata.getCell('B1').font = { name: 'Times New Normal', size: 11, bold: true };
+						worksheetBiodata.getCell('A2').value = 'Daerah Komisaris';
+						worksheetBiodata.getCell('A2').font = { name: 'Times New Normal', size: 11, bold: true };
+						worksheetBiodata.getCell('B2').value = `${dataTampung[index].daerah}`;
+						worksheetBiodata.getCell('B2').font = { name: 'Times New Normal', size: 11, bold: true };
+	
+						worksheetBiodata.addRow([]);
+						Object.keys(data).forEach(sectionKey => {
+							const sectionData = data[sectionKey];
+	
+							const tableHeader = worksheetBiodata.addRow(Object.keys(sectionData[0]));
+							tableHeader.eachCell((cell, colNumber) => {
+								cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+								cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } };
+								// cell.font = { bold: true };
+								cell.font = { name: 'Times New Normal', size: 11, bold: true };
+								cell.alignment = { vertical: 'middle', horizontal: 'center' };
+								worksheetBiodata.getRow(4).height = 25;
+								worksheetBiodata.getColumn(1).width = 25;
+								worksheetBiodata.getColumn(2).width = 25;
+								worksheetBiodata.getColumn(3).width = 30;
+								worksheetBiodata.getColumn(4).width = 40;
+								worksheetBiodata.getColumn(5).width = 70;
+	
+								worksheetBiodata.getCell('A4').value = 'No. Urut PSO Sundut';
+								worksheetBiodata.getCell('B4').value = 'No. Anggota';
+								worksheetBiodata.getCell('C4').value = 'Goarni Ama/Ina Panggoaran';
+								worksheetBiodata.getCell('D4').value = 'Lanakhon/Tanggungan';
+								worksheetBiodata.getCell('E4').value = 'Alamat';
+								
+							});
+	
+							sectionData.forEach(item => {
+								const rowData = Object.values(item);
+								const row = worksheetBiodata.addRow(rowData);
+								row.eachCell((cell, colNumber) => {
+									cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+									cell.font = { name: 'Times New Normal', size: 10, bold: false };
+									if (colNumber >= 3 && colNumber <= 5) {
+										cell.alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									}else{
+										cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+									}
+								});
+							});
+						});
+	
+						res.setHeader(
+							"Content-Disposition",
+							"attachment; filename=ExportSiswa.xlsx"
+						);
+					}
+	
+					res.setHeader(
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+					);
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
+					});
+				}
+			}else if(bagian === 'rekapmenikah'){
+				if(kategori === 'full'){
+					let workbook = new excel.Workbook();
+					let split = wilayah.split(', ')
+					for (let index = 0; index < split.length; index++) {
+						const dataRekapMenikah = await models.RekapMenikah.findAll({
+							where: { wilayah: split[index] },
+							include: [
+								{ 
+									model: models.WilayahPanjaitan,
+								},
+							],
+							order: [['createdAt', 'DESC']],
+						});
+
+						const result = await Promise.all(dataRekapMenikah.map(async val => {
+							let wilayah = await _wilayahpanjaitanOption({ models, kode: val.dataValues.wilayah })
+							
+							return {
+								idRekap: val.dataValues.idRekap,
+								wilayah: wilayah.dataValues.label,
+								tanggal: `${convertDateForDay(val.dataValues.tanggal)}, ${dateconvert(val.dataValues.tanggal)}`,
+								kategori: val.dataValues.kategori,
+								nama: val.dataValues.nama,
+								orangTuaMenantu: val.dataValues.orangTuaMenantu,
+								pemberkatan: val.dataValues.pemberkatan,
+								penanggungJawab: val.dataValues.penanggungJawab,
+								yangMemberiSumbangan: val.dataValues.yangMemberiSumbangan,
+								pemberiUlos: val.dataValues.pemberiUlos,
+								keterangan: val.dataValues.keterangan,
+							}
+						}))
+						
+						let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
+						let nama_wilayah = wilayah_panjaitan.dataValues.label
+						let worksheetRekapMenikah = workbook.addWorksheet(`${nama_wilayah}`);
+	
+						//Data Rekap
+						worksheetRekapMenikah.columns = [
+							{ header: "idRekap", key: "idRekap", width: 20 },
+							{ header: "WILAYAH", key: "wilayah", width: 20 },
+							{ header: "HARI, TANGGAL", key: "tanggal", width: 25 },
+							{ header: "GOAR NI ULAON", key: "kategori", width: 35 },
+							{ header: "GOAR NI NAMARHASOHOTAN", key: "nama", width: 40 },
+							{ header: "GOAR NI HASUHUTON", key: "orangTuaMenantu", width: 40 },
+							{ header: "GEREJA PAMASUMASUON DOHOT ALAMAN PARPESTAAN", key: "pemberkatan", width: 65 },
+							{ header: "PROTOKOL", key: "penanggungJawab", width: 35 },
+							{ header: "RAJA PARHATA / PARSINABUL", key: "yangMemberiSumbangan", width: 40 },
+							{ header: "HASAHATAN NI ULOS NAMARHADOHOAN / PANANDAION TU PENGURUS", key: "pemberiUlos", width: 85 },
+							{ header: "KETERANGAN", key: "keterangan", width: 50 },
+						];
+		
+						worksheetRekapMenikah.addRows(result);
+		
+						worksheetRekapMenikah.eachRow({ includeEmpty: true }, function(row, rowNumber){
+							row.eachCell(function(cell, colNumber){
+								if (rowNumber === 1) {
+									row.height = 25;
+									cell.font = { name: 'Times New Normal', size: 11, bold: true };
+									cell.alignment = { vertical: 'middle', horizontal: 'center' };
+								}
+								if (rowNumber > 1) {
+									cell.font = { name: 'Times New Normal', size: 10, bold: false };
+									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+								 }
+							});
+						});
+					
+						res.setHeader(
+							"Content-Disposition",
+							"attachment; filename=ExportSiswa.xlsx"
+						);
+					}
+					res.setHeader(
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+					);
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
+					});
+				}else if(kategori === 'byfilter'){
+					startdate = startdate ? startdate : DateTime.local().plus({ month: -1 }).toISODate(),
+					enddate = enddate ? enddate : DateTime.local().toISODate()
+
+					let workbook = new excel.Workbook();
+					let split = wilayah.split(', ')
+					for (let index = 0; index < split.length; index++) {
+						const dataRekapMenikah = await models.RekapMenikah.findAll({
+							where: {
+								wilayah: split[index],
+								tanggal: { [Op.between]: [startdate, enddate] }
+							},
+							include: [
+								{ 
+									model: models.WilayahPanjaitan,
+								},
+							],
+							order: [['createdAt', 'DESC']],
+						});
+
+						const result = await Promise.all(dataRekapMenikah.map(async val => {
+							let wilayah = await _wilayahpanjaitanOption({ models, kode: val.dataValues.wilayah })
+							
+							return {
+								idRekap: val.dataValues.idRekap,
+								wilayah: wilayah.dataValues.label,
+								tanggal: `${convertDateForDay(val.dataValues.tanggal)}, ${dateconvert(val.dataValues.tanggal)}`,
+								kategori: val.dataValues.kategori,
+								nama: val.dataValues.nama,
+								orangTuaMenantu: val.dataValues.orangTuaMenantu,
+								pemberkatan: val.dataValues.pemberkatan,
+								penanggungJawab: val.dataValues.penanggungJawab,
+								yangMemberiSumbangan: val.dataValues.yangMemberiSumbangan,
+								pemberiUlos: val.dataValues.pemberiUlos,
+								keterangan: val.dataValues.keterangan,
+							}
+						}))
+						
+						let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
+						let nama_wilayah = wilayah_panjaitan.dataValues.label
+						let worksheetRekapMenikah = workbook.addWorksheet(`${nama_wilayah}`);
+	
+						//Data Rekap
+						worksheetRekapMenikah.columns = [
+							{ header: "idRekap", key: "idRekap", width: 20 },
+							{ header: "WILAYAH", key: "wilayah", width: 20 },
+							{ header: "HARI, TANGGAL", key: "tanggal", width: 25 },
+							{ header: "GOAR NI ULAON", key: "kategori", width: 35 },
+							{ header: "GOAR NI NAMARHASOHOTAN", key: "nama", width: 40 },
+							{ header: "GOAR NI HASUHUTON", key: "orangTuaMenantu", width: 40 },
+							{ header: "GEREJA PAMASUMASUON DOHOT ALAMAN PARPESTAAN", key: "pemberkatan", width: 65 },
+							{ header: "PROTOKOL", key: "penanggungJawab", width: 35 },
+							{ header: "RAJA PARHATA / PARSINABUL", key: "yangMemberiSumbangan", width: 40 },
+							{ header: "HASAHATAN NI ULOS NAMARHADOHOAN / PANANDAION TU PENGURUS", key: "pemberiUlos", width: 85 },
+							{ header: "KETERANGAN", key: "keterangan", width: 50 },
+						];
+		
+						worksheetRekapMenikah.addRows(result);
+		
+						worksheetRekapMenikah.eachRow({ includeEmpty: true }, function(row, rowNumber){
+							row.eachCell(function(cell, colNumber){
+								if (rowNumber === 1) {
+									row.height = 25;
+									cell.font = { name: 'Times New Normal', size: 11, bold: true };
+									cell.alignment = { vertical: 'middle', horizontal: 'center' };
+								}
+								if (rowNumber > 1) {
+									cell.font = { name: 'Times New Normal', size: 10, bold: false };
+									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+								 }
+							});
+						});
+					
+						res.setHeader(
+							"Content-Disposition",
+							"attachment; filename=ExportSiswa.xlsx"
+						);
+					}
+					res.setHeader(
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+					);
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
+					});
+				}
+			}else if(bagian === 'rekapmeninggal'){
+				if(kategori === 'full'){
+					let workbook = new excel.Workbook();
+					let split = wilayah.split(', ')
+					for (let index = 0; index < split.length; index++) {
+						const dataRekapMeninggal = await models.RekapMeninggal.findAll({
+							where: { wilayah: split[index] },
+							include: [
+								{ 
+									model: models.WilayahPanjaitan,
+								},
+							],
+							order: [['createdAt', 'DESC']],
+						});
+
+						const result = await Promise.all(dataRekapMeninggal.map(async val => {
+							let wilayah = await _wilayahpanjaitanOption({ models, kode: val.dataValues.wilayah })
+
+							return {
+								idRekap: val.dataValues.idRekap,
+								wilayah: wilayah.dataValues.label,
+								tanggal: `${convertDateForDay(val.dataValues.tanggal)}, ${dateconvert(val.dataValues.tanggal)}`,
+								kategori: val.dataValues.kategori,
+								nama: val.dataValues.nama,
+								yangDitinggal: val.dataValues.yangDitinggal,
+								rumahDuka: val.dataValues.rumahDuka,
+								acaraAdat: val.dataValues.acaraAdat,
+								penanggungJawab: val.dataValues.penanggungJawab,
+								yangMemberiSumbangan: val.dataValues.yangMemberiSumbangan,
+								keterangan: val.dataValues.keterangan,
+							}
+						}))
+						
+						let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
+						let nama_wilayah = wilayah_panjaitan.dataValues.label
+						let worksheetRekapMeninggal = workbook.addWorksheet(`${nama_wilayah}`);
+	
+						//Data Rekap
+						worksheetRekapMeninggal.columns = [
+							{ header: "idRekap", key: "idRekap", width: 20 },
+							{ header: "WILAYAH", key: "wilayah", width: 20 },
+							{ header: "TANGGAL", key: "tanggal", width: 20 },
+							{ header: "NAMONDING", key: "kategori", width: 35 },
+							{ header: "GOAR NI NAMONDING", key: "nama", width: 40 },
+							{ header: "HASUHUTON / NAMANGHABALUHON", key: "yangDitinggal", width: 50 },
+							{ header: "INGANAN", key: "rumahDuka", width: 40 },
+							{ header: "TONGGO RAJA / PASADA TAHI / ADAT PARTUATNA", key: "acaraAdat", width: 60 },
+							{ header: "PROTOKOL", key: "penanggungJawab", width: 40 },
+							{ header: "RAJA ARHATA / PARSINABUL / NAMANGULUHON", key: "yangMemberiSumbangan", width: 70 },
+							{ header: "KETERANGAN", key: "keterangan", width: 50 },
+						];
+		
+						worksheetRekapMeninggal.addRows(result);
+		
+						worksheetRekapMeninggal.eachRow({ includeEmpty: true }, function(row, rowNumber){
+							row.eachCell(function(cell, colNumber){
+								if (rowNumber === 1) {
+									row.height = 25;
+									cell.font = { name: 'Times New Normal', size: 11, bold: true };
+									cell.alignment = { vertical: 'middle', horizontal: 'center' };
+								}
+								if (rowNumber > 1) {
+									cell.font = { name: 'Times New Normal', size: 10, bold: false };
+									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+								 }
+							});
+						});
+					
+						res.setHeader(
+							"Content-Disposition",
+							"attachment; filename=ExportSiswa.xlsx"
+						);
+					}
+					res.setHeader(
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+					);
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
+					});
+				}else if(kategori === 'byfilter'){
+					startdate = startdate ? startdate : DateTime.local().plus({ month: -1 }).toISODate(),
+					enddate = enddate ? enddate : DateTime.local().toISODate()
+
+					let workbook = new excel.Workbook();
+					let split = wilayah.split(', ')
+					for (let index = 0; index < split.length; index++) {
+						const dataRekapMeninggal = await models.RekapMenikah.findAll({
+							where: {
+								wilayah: split[index],
+								tanggal: { [Op.between]: [startdate, enddate] }
+							},
+							include: [
+								{ 
+									model: models.WilayahPanjaitan,
+								},
+							],
+							order: [['createdAt', 'DESC']],
+						});
+
+						const result = await Promise.all(dataRekapMenikah.map(async val => {
+							let wilayah = await _wilayahpanjaitanOption({ models, kode: val.dataValues.wilayah })
+							
+							return {
+								idRekap: val.dataValues.idRekap,
+								wilayah: wilayah.dataValues.label,
+								tanggal: `${convertDateForDay(val.dataValues.tanggal)}, ${dateconvert(val.dataValues.tanggal)}`,
+								kategori: val.dataValues.kategori,
+								nama: val.dataValues.nama,
+								yangDitinggal: val.dataValues.yangDitinggal,
+								rumahDuka: val.dataValues.rumahDuka,
+								acaraAdat: val.dataValues.acaraAdat,
+								penanggungJawab: val.dataValues.penanggungJawab,
+								yangMemberiSumbangan: val.dataValues.yangMemberiSumbangan,
+								keterangan: val.dataValues.keterangan,
+							}
+						}))
+						
+						let wilayah_panjaitan = await _wilayahpanjaitanOption({ models, kode: split[index] })
+						let nama_wilayah = wilayah_panjaitan.dataValues.label
+						let worksheetRekapMeninggal = workbook.addWorksheet(`${nama_wilayah}`);
+	
+						//Data Rekap
+						worksheetRekapMeninggal.columns = [
+							{ header: "idRekap", key: "idRekap", width: 20 },
+							{ header: "WILAYAH", key: "wilayah", width: 20 },
+							{ header: "TANGGAL", key: "tanggal", width: 20 },
+							{ header: "NAMONDING", key: "kategori", width: 35 },
+							{ header: "GOAR NI NAMONDING", key: "nama", width: 40 },
+							{ header: "HASUHUTON / NAMANGHABALUHON", key: "yangDitinggal", width: 50 },
+							{ header: "INGANAN", key: "rumahDuka", width: 40 },
+							{ header: "TONGGO RAJA / PASADA TAHI / ADAT PARTUATNA", key: "acaraAdat", width: 60 },
+							{ header: "PROTOKOL", key: "penanggungJawab", width: 40 },
+							{ header: "RAJA ARHATA / PARSINABUL / NAMANGULUHON", key: "yangMemberiSumbangan", width: 70 },
+							{ header: "KETERANGAN", key: "keterangan", width: 50 },
+						];
+		
+						worksheetRekapMeninggal.addRows(result);
+		
+						worksheetRekapMeninggal.eachRow({ includeEmpty: true }, function(row, rowNumber){
+							row.eachCell(function(cell, colNumber){
+								if (rowNumber === 1) {
+									row.height = 25;
+									cell.font = { name: 'Times New Normal', size: 11, bold: true };
+									cell.alignment = { vertical: 'middle', horizontal: 'center' };
+								}
+								if (rowNumber > 1) {
+									cell.font = { name: 'Times New Normal', size: 10, bold: false };
+									row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+									row.getCell(5).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(6).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(7).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(8).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(9).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(10).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+									row.getCell(11).alignment = { vertical: 'middle', horizontal: 'justify', wrapText: true };
+								 }
+							});
+						});
+					
+						res.setHeader(
+							"Content-Disposition",
+							"attachment; filename=ExportSiswa.xlsx"
+						);
+					}
+					res.setHeader(
+						"Content-Type",
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+					);
+			
+					return workbook.xlsx.write(res).then(function () {
+						res.status(200).end();
+					});
+				}
 			}
 	  } catch (err) {
-			  return NOT_FOUND(res, err.message)
+			console.log(err);
+			return NOT_FOUND(res, err.message)
 	  }
 	}  
 }

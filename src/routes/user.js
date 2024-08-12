@@ -81,7 +81,7 @@ module.exports = models => {
   route.route('/optionsKomisarisWilayah')
     .get(verifyToken, optionsKomisarisWilayah(models))
 
-  route.route('/template/:wilayah')
+  route.route('/template')
     .get(downloadTemplate(models))
   route.route('/importexcel')
     .post(uploadFile, importExcel(models))
