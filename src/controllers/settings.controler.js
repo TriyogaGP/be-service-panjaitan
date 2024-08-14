@@ -930,7 +930,6 @@ function crudKomisarisWilayah (models) {
   }  
 }
 
-
 function getWilayahPanjaitan (models) {
   return async (req, res, next) => {
 		let { page = 1, limit = 10, sort = '', keyword } = req.query

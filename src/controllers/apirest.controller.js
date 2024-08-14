@@ -152,6 +152,59 @@ function getAnggota (models) {
   }  
 }
 
+function getWilayahPanjaitan (models) {
+  return async (req, res, next) => {
+    try {
+			const dataWilayahPanjaitan = await models.WilayahPanjaitan.findAll();
+			return OK(res, await dataWilayahPanjaitan.map(val => {
+				return {
+					id: str.id,
+					kode: str.kode,
+					label: str.label,
+					namaKetuaWilayah: str.namaKetuaWilayah,
+					lambang: `${BASE_URL}bahan/${val.dataValues.lambang}`
+				}
+			}));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getKomisarisWilayah (models) {
+  return async (req, res, next) => {
+    let { kodeWilayah } = req.params
+		let where = {}
+    try {
+			if(kodeWilayah){
+				where = { kodeWilayah }
+			}
+      const dataKomisarisWilayah = await models.KomisarisWilayah.findAll({
+				where: { ...where, statusKomisaris: true },
+				include: [
+					{ 
+						model: models.WilayahPanjaitan,
+					}
+				],
+			});
+			return OK(res, dataKomisarisWilayah.map(str => {
+				return {
+					idKomisaris: str.idKomisaris,
+					kodeKomisarisWilayah: str.kodeKomisarisWilayah,
+					kodeWilayah: str.kodeWilayah,
+					namaWilayah: str.WilayahPanjaitan.label,
+					namaKomisaris: str.namaKomisaris,
+					daerah: str.daerah,
+				}
+			}));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   getAnggota,
+	getWilayahPanjaitan,
+	getKomisarisWilayah,
 }
