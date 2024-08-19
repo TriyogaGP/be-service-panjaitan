@@ -573,7 +573,8 @@ function postBiodata (models) {
 					if(body.komisarisWilayah !== cek.komisarisWilayah) {
 						nik = await pengecekanNik(body)
 					}else{
-						nik = cek.nik
+						let nourut = cek.nik.split('.')[4]
+						nik = `${body.wilayah}.${body.komisarisWilayah}.${body.ompu}${body.generasi}.${nourut}`
 					}
 				}else{
 					nik = await pengecekanNik(body)
