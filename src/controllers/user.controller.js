@@ -2518,7 +2518,7 @@ function importExcel (models) {
 							if(body.wilayah === '00'){
 								worksheetWilayahPanjaitan.addRows(WilayahPanjaitan);
 							}else{
-								worksheetWilayahPanjaitan.addRows(WilayahPanjaitan.filter(val => val.kode === wilayah));
+								worksheetWilayahPanjaitan.addRows(WilayahPanjaitan.filter(val => val.kode === body.wilayah));
 							}
 							worksheetWilayahPanjaitan.eachRow({ includeEmpty: true }, function(row, rowNumber){
 								row.eachCell(function(cell, colNumber){
@@ -2547,7 +2547,7 @@ function importExcel (models) {
 							if(body.wilayah === '00'){
 								worksheetKomisarisWilayah.addRows(KomisarisWilayah);
 							}else{
-								worksheetKomisarisWilayah.addRows(KomisarisWilayah.filter(val => val.kodeWilayah === wilayah));
+								worksheetKomisarisWilayah.addRows(KomisarisWilayah.filter(val => val.kodeWilayah === body.wilayah));
 							}
 							worksheetKomisarisWilayah.eachRow({ includeEmpty: true }, function(row, rowNumber){
 								row.eachCell(function(cell, colNumber){
