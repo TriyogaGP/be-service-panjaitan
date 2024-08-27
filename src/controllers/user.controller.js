@@ -79,17 +79,28 @@ function getDashboard (models) {
 			const dataWilayah = await _allOption({ table: models.WilayahPanjaitan })
 			const responseData = await Promise.all(dataWilayah.map(async val => {
 				const count = await models.Biodata.count({where: { wilayah: val.kode }});
+				const dataBiodata = await models.Biodata.findAll({where: { wilayah: val.kode }});
+				const countObj = dataBiodata.reduce((acc, curr) => {
+					const tmp = acc
+					const { statusSuami, statusIstri } = curr
+					if(statusSuami === 'Hidup') tmp.suami += 1
+					if(statusIstri === 'Hidup') tmp.istri += 1
+					return tmp
+				}, {
+					suami: 0,
+					istri: 0,
+				});
+
+				const databiodata = await models.Biodata.findAll({where: { wilayah: val.kode }, attributes: ['idBiodata']});
+				const anak = await _anakOption({ models, idBiodata: databiodata.map(str => str.idBiodata) })
 				let obj = {
 					kode: val.kode,
 					label: val.label,
 					jml: count,
+					totalJiwa: anak.length + countObj.suami + countObj.istri,
 				}
 				return obj;
 			}))
-
-			// const total = responseData.reduce((acc, curr) => {
-			// 	return { jml: acc.jml + curr.jml };
-			// }, { jml: 0 });
 
 			// return OK(res, consumerType === 1 || consumerType === 2 ? { responseData, total } : responseData.filter(val => val.kode === wilayah));
 			return OK(res, consumerType === 1 || consumerType === 2 ? responseData : responseData.filter(val => val.kode === wilayah));
@@ -106,11 +117,26 @@ function getDashboardTwo (models) {
 			const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: wilayah, statusKomisaris: true } })
 			const responseData = await Promise.all(dataKomisarisWilayah.map(async val => {
 				const count = await models.Biodata.count({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
+				const dataBiodata = await models.Biodata.findAll({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
+				const countObj = dataBiodata.reduce((acc, curr) => {
+					const tmp = acc
+					const { statusSuami, statusIstri } = curr
+					if(statusSuami === 'Hidup') tmp.suami += 1
+					if(statusIstri === 'Hidup') tmp.istri += 1
+					return tmp
+				}, {
+					suami: 0,
+					istri: 0,
+				});
+
+				const databiodata = await models.Biodata.findAll({where: { komisarisWilayah: val.kodeKomisarisWilayah }, attributes: ['idBiodata']});
+				const anak = await _anakOption({ models, idBiodata: databiodata.map(str => str.idBiodata) })
 				let obj = {
 					kodeKomisarisWilayah: val.kodeKomisarisWilayah,
 					kodeWilayah: val.kodeWilayah,
 					namaKomisaris: val.namaKomisaris,
 					jml: count,
+					totalJiwa: anak.length + countObj.suami + countObj.istri,
 				}
 				return obj;
 			}))
@@ -4057,70 +4083,123 @@ function testing (models) {
 			// 	console.log(index);
 			// }
 
-			const dataRekapTugas = await models.RekapTugas.findAll({
-				include: [
-					{ 
-						model: models.WilayahPanjaitan,
-					},
-				],
-				order: [['wilayah', 'ASC']],
-				limit: 1
-			});
+			// const dataRekapTugas = await models.RekapTugas.findAll({
+			// 	include: [
+			// 		{ 
+			// 			model: models.WilayahPanjaitan,
+			// 		},
+			// 	],
+			// 	order: [['wilayah', 'ASC']],
+			// 	limit: 1
+			// });
 
-			let result = await Promise.all(dataRekapTugas.map(str => {
-				let tugasMenikah = JSON.parse(str.menikah)
-				let tugasMeninggal = JSON.parse(str.meninggal)
-				let datatugasMenikahTemp = tugasMenikah.filter(val => val.tahun === tahun)
-				let datatugasMeninggalTemp = tugasMeninggal.filter(val => val.tahun === tahun)
-				let wadahMenikah = datatugasMenikahTemp.length ? datatugasMenikahTemp[0].menikah : []
-				let wadahMeninggal = datatugasMeninggalTemp.length ? datatugasMeninggalTemp[0].meninggal : []
-				let dataTugasMenikah = wadahMenikah.filter(val => val.bulan <= parseInt(bulan)).map(str => str.data)
-				let dataTugasMeninggal = wadahMeninggal.filter(val => val.bulan <= parseInt(bulan)).map(str => str.data)
-				var tugasTampung = dataTugasMenikah.map((obj, index) => ({
-					...obj,
-					...dataTugasMeninggal[index],
-					total: obj.totalmenikah + dataTugasMeninggal[index].totalmeninggal
-				}));
-				const countObj = tugasTampung.reduce((acc, curr) => {
-					return {
-						Anak_Mangoli: acc.Anak_Mangoli + curr.Anak_Mangoli,
-						Boru_Muli: acc.Boru_Muli + curr.Boru_Muli,
-						Bere_Mangoli: acc.Bere_Mangoli + curr.Bere_Mangoli,
-						Pasahat: acc.Pasahat + curr.Pasahat,
-						Manjalo: acc.Manjalo + curr.Manjalo,
-						Resepsi: acc.Resepsi + curr.Resepsi,
-						M123: acc.M123 + curr.M123,
-						totalmenikah: acc.totalmenikah + curr.totalmenikah,
-						Ama: acc.Ama + curr.Ama,
-						Ina: acc.Ina + curr.Ina,
-						Hela: acc.Hela + curr.Hela,
-						Boru: acc.Boru + curr.Boru,
-						Anak_Boru: acc.Anak_Boru + curr.Anak_Boru,
-						Dakdanak: acc.Dakdanak + curr.Dakdanak,
-						totalmeninggal: acc.totalmeninggal + curr.totalmeninggal,
-						total: acc.total + curr.total,
-					};
+			// let result = await Promise.all(dataRekapTugas.map(str => {
+			// 	let tugasMenikah = JSON.parse(str.menikah)
+			// 	let tugasMeninggal = JSON.parse(str.meninggal)
+			// 	let datatugasMenikahTemp = tugasMenikah.filter(val => val.tahun === tahun)
+			// 	let datatugasMeninggalTemp = tugasMeninggal.filter(val => val.tahun === tahun)
+			// 	let wadahMenikah = datatugasMenikahTemp.length ? datatugasMenikahTemp[0].menikah : []
+			// 	let wadahMeninggal = datatugasMeninggalTemp.length ? datatugasMeninggalTemp[0].meninggal : []
+			// 	let dataTugasMenikah = wadahMenikah.filter(val => val.bulan <= parseInt(bulan)).map(str => str.data)
+			// 	let dataTugasMeninggal = wadahMeninggal.filter(val => val.bulan <= parseInt(bulan)).map(str => str.data)
+			// 	var tugasTampung = dataTugasMenikah.map((obj, index) => ({
+			// 		...obj,
+			// 		...dataTugasMeninggal[index],
+			// 		total: obj.totalmenikah + dataTugasMeninggal[index].totalmeninggal
+			// 	}));
+			// 	const countObj = tugasTampung.reduce((acc, curr) => {
+			// 		return {
+			// 			Anak_Mangoli: acc.Anak_Mangoli + curr.Anak_Mangoli,
+			// 			Boru_Muli: acc.Boru_Muli + curr.Boru_Muli,
+			// 			Bere_Mangoli: acc.Bere_Mangoli + curr.Bere_Mangoli,
+			// 			Pasahat: acc.Pasahat + curr.Pasahat,
+			// 			Manjalo: acc.Manjalo + curr.Manjalo,
+			// 			Resepsi: acc.Resepsi + curr.Resepsi,
+			// 			M123: acc.M123 + curr.M123,
+			// 			totalmenikah: acc.totalmenikah + curr.totalmenikah,
+			// 			Ama: acc.Ama + curr.Ama,
+			// 			Ina: acc.Ina + curr.Ina,
+			// 			Hela: acc.Hela + curr.Hela,
+			// 			Boru: acc.Boru + curr.Boru,
+			// 			Anak_Boru: acc.Anak_Boru + curr.Anak_Boru,
+			// 			Dakdanak: acc.Dakdanak + curr.Dakdanak,
+			// 			totalmeninggal: acc.totalmeninggal + curr.totalmeninggal,
+			// 			total: acc.total + curr.total,
+			// 		};
+			// 	}, {
+			// 		Anak_Mangoli: 0,
+			// 		Boru_Muli: 0,
+			// 		Bere_Mangoli: 0,
+			// 		Pasahat: 0,
+			// 		Manjalo: 0,
+			// 		Resepsi: 0,
+			// 		M123: 0,
+			// 		totalmenikah: 0,
+			// 		Ama: 0,
+			// 		Ina: 0,
+			// 		Hela: 0,
+			// 		Boru: 0,
+			// 		Anak_Boru: 0,
+			// 		Dakdanak: 0,
+			// 		totalmeninggal: 0,
+			// 		total: 0,
+			// 	});
+			// 	return countObj
+			// }))
+
+			const dataWilayah = await _allOption({ table: models.WilayahPanjaitan })
+			const responseData = await Promise.all(dataWilayah.map(async val => {
+				const count = await models.Biodata.count({where: { wilayah: val.kode }});
+				const dataBiodata = await models.Biodata.findAll({where: { wilayah: val.kode }});
+				const countObj = dataBiodata.reduce((acc, curr) => {
+					const tmp = acc
+					const { statusSuami, statusIstri } = curr
+					if(statusSuami === 'Hidup') tmp.suami += 1
+					if(statusIstri === 'Hidup') tmp.istri += 1
+					return tmp
 				}, {
-					Anak_Mangoli: 0,
-					Boru_Muli: 0,
-					Bere_Mangoli: 0,
-					Pasahat: 0,
-					Manjalo: 0,
-					Resepsi: 0,
-					M123: 0,
-					totalmenikah: 0,
-					Ama: 0,
-					Ina: 0,
-					Hela: 0,
-					Boru: 0,
-					Anak_Boru: 0,
-					Dakdanak: 0,
-					totalmeninggal: 0,
-					total: 0,
+					suami: 0,
+					istri: 0,
 				});
-				return countObj
+
+				const databiodata = await models.Biodata.findAll({where: { wilayah: val.kode }, attributes: ['idBiodata']});
+				const anak = await _anakOption({ models, idBiodata: databiodata.map(str => str.idBiodata) })
+				let obj = {
+					kode: val.kode,
+					label: val.label,
+					jml: count,
+					totalJiwa: anak.length + countObj.suami + countObj.istri,
+				}
+				return obj;
 			}))
-			return OK(res, result)
+
+			// const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: '01', statusKomisaris: true } })
+			// const responseData = await Promise.all(dataKomisarisWilayah.map(async val => {
+			// 	const count = await models.Biodata.count({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
+			// 	const dataBiodata = await models.Biodata.findAll({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
+			// 	const countObj = dataBiodata.reduce((acc, curr) => {
+			// 		const tmp = acc
+			// 		const { statusSuami, statusIstri } = curr
+			// 		if(statusSuami === 'Hidup') tmp.suami += 1
+			// 		if(statusIstri === 'Hidup') tmp.istri += 1
+			// 		return tmp
+			// 	}, {
+			// 		suami: 0,
+			// 		istri: 0,
+			// 	});
+
+			// 	const databiodata = await models.Biodata.findAll({where: { komisarisWilayah: val.kodeKomisarisWilayah }, attributes: ['idBiodata']});
+			// 	const anak = await _anakOption({ models, idBiodata: databiodata.map(str => str.idBiodata) })
+			// 	let obj = {
+			// 		kodeKomisarisWilayah: val.kodeKomisarisWilayah,
+			// 		kodeWilayah: val.kodeWilayah,
+			// 		namaKomisaris: val.namaKomisaris,
+			// 		jml: count,
+			// 		totalJiwa: anak.length + countObj.suami + countObj.istri,
+			// 	}
+			// 	return obj;
+			// }))
+			return OK(res, responseData)
 		} catch (err) {
 			return NOT_FOUND(res, err.message)
 		}
