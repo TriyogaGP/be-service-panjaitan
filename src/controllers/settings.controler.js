@@ -666,7 +666,7 @@ function crudNotifikasi (models) {
 					await models.TemporaryData.update({ isRead: 1 }, { where: { idTemporaryData: val.dataValues.idTemporaryData } })
 				}))
 			}else if(body.jenis === 'SETUJU'){
-				const { kirimdataUser } = body.dataTemporary.payload
+				const { kirimdataUser, kirimdataAnak } = body.dataTemporary.payload
 				await sequelizeInstance.transaction(async trx => {
 					await models.TemporaryData.update({ statusExecute: body.statusExecute }, { where: { idTemporaryData: body.idTemporaryData } }, { transaction: trx })
 					
@@ -676,7 +676,7 @@ function crudNotifikasi (models) {
 					}else if(body.jenisNotif === 'Update') {
 						await models.Anak.destroy({ where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx });
 						await models.Biodata.update(kirimdataUser, { where: { idBiodata: kirimdataUser.idBiodata } }, { transaction: trx })
-						await models.Anak.bulkCreate(data.payload.kirimdataAnak, { transaction: trx })
+						await models.Anak.bulkCreate(kirimdataAnak, { transaction: trx })
 					}else if(body.jenisNotif === 'DeleteAll') {
 						kirimdataUser.map(async val => {
 							await models.Iuran.destroy({ where: { idBiodata: val.idBiodata } }, { transaction: trx });
