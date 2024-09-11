@@ -340,6 +340,7 @@ function getBiodata (models) {
 			const whereKey = keyword ? {
 				[Op.or]: [
 					{ namaLengkap : { [Op.like]: `%${keyword}%` }},
+					{ namaIstri : { [Op.like]: `%${keyword}%` }},
 					{ nik : { [Op.like]: `%${keyword}%` }},
 					{ '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
 					consumerType !== 3 && { '$KomisarisWilayah.nama_komisaris$' : { [Op.like]: `%${keyword}%` }},
@@ -2312,7 +2313,7 @@ function importExcel (models) {
 											jabatanPengurus: str.jabatanPengurus === null ? '-' : str.jabatanPengurus,
 											wilayah: str.wilayah,
 											komisarisWilayah: str.komisarisWilayah,
-											ompu: str.ompu,
+											ompu: str.ompu.toLowerCase(),
 											generasi: str.generasi,
 											statusSuami: uppercaseLetterFirst(str.statusSuami),
 											tanggalWafatSuami: null,
@@ -2329,7 +2330,7 @@ function importExcel (models) {
 												kategoriAnak: uppercaseLetterFirst(val.kategoriAnak),
 												namaAnak: val.namaAnak,
 												tanggalLahir: val.tanggalLahir,
-												statusAnak: val.statusAnak,
+												statusAnak: uppercaseLetterFirst(val.statusAnak),
 											})
 										})
 										
@@ -3229,7 +3230,7 @@ function exportExcel (models) {
 							return {
 								nourut: `${setNum(++i)}\n${val.ompu}${val.generasi}`,
 								nik: val.nik,
-								nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''}`,
+								nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} (${val.tempatSuami ? val.tempatSuami : '-'}, ${val.tanggalLahirSuami ? convertDateTime3(val.tanggalLahirSuami) : '-'}) / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} (${val.tempatIstri ? val.tempatIstri : '-'}, ${val.tanggalLahirIstri ? convertDateTime3(val.tanggalLahirIstri) : '-'})`,
 								tanggungan: val.Anaks.length ? _.join(anak, '\n') : '-',
 								alamat: `${val.alamat ? val.alamat : '-'}${kelurahan ? `, ${kelurahan.dataValues.jenisKelDes} ${kelurahan.dataValues.nama}` : ''}${kecamatan ? `, Kecamatan ${kecamatan.dataValues.nama}` : ''}${kabkota ? `, ${kabkota.dataValues.jenisKabKota} ${kabkota.dataValues.nama}` : ''}${provinsi ? `, ${provinsi.dataValues.nama}` : ''} ${val.kodePos ? val.kodePos : ''}\nTelp: ${val.statusSuami === 'Meninggal' ? val.telpIstri ? val.telpIstri : '-' : val.telp ? val.telp : '-'}`,
 							}
