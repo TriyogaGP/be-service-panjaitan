@@ -330,8 +330,9 @@ function getBiodata (models) {
 				if(splitFilter[0] === 'Status') {
 					where2.statusSuami = splitFilter[1]
 				}else if(splitFilter[0] === 'Wilayah') {
-					where2 = { '$WilayahPanjaitan.label$' : { [Op.like]: `%${splitFilter[1]}%` }}
-					}else if(splitFilter[0] === 'Komisaris') {
+					let textSplit = splitFilter.length > 2 ? `${splitFilter[1]}-${splitFilter[2]}` : `${splitFilter[1]}`
+					where2 = { '$WilayahPanjaitan.label$' : { [Op.like]: `%${textSplit}%` }}
+				}else if(splitFilter[0] === 'Komisaris') {
 					// where2 = { '$KomisarisWilayah.nama_komisaris$' : { [Op.like]: `%${splitFilter[1]}%` }}
 					where2 = { komisarisWilayah : { [Op.like]: `%${splitFilter[1]}%` }}
 				}
@@ -2893,7 +2894,7 @@ function exportExcel (models) {
 							let kabkota = val.dataValues.kabKota ? await _wilayah2023Option({ models, kode: val.dataValues.kabKota, bagian: 'kabkota' }) : val.dataValues.kabKota
 							let kecamatan = val.dataValues.kecamatan ? await _wilayah2023Option({ models, kode: val.dataValues.kecamatan, bagian: 'kecamatan' }) : val.dataValues.kecamatan
 							let kelurahan = val.dataValues.kelurahan ? await _wilayah2023Option({ models, kode: val.dataValues.kelurahan, bagian: 'keldes' }) : val.dataValues.kelurahan
-							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? str.tanggalLahir : '-'})`) : []
+							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? convertDateTime3(str.tanggalLahir) : '-'})`) : []
 							
 							return {
 								idBiodata: val.dataValues.idBiodata,
@@ -3051,7 +3052,7 @@ function exportExcel (models) {
 							let kabkota = val.dataValues.kabKota ? await _wilayah2023Option({ models, kode: val.dataValues.kabKota, bagian: 'kabkota' }) : val.dataValues.kabKota
 							let kecamatan = val.dataValues.kecamatan ? await _wilayah2023Option({ models, kode: val.dataValues.kecamatan, bagian: 'kecamatan' }) : val.dataValues.kecamatan
 							let kelurahan = val.dataValues.kelurahan ? await _wilayah2023Option({ models, kode: val.dataValues.kelurahan, bagian: 'keldes' }) : val.dataValues.kelurahan
-							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? str.tanggalLahir : '-'})`) : []
+							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? convertDateTime3(str.tanggalLahir) : '-'})`) : []
 							
 							return {
 								idBiodata: val.dataValues.idBiodata,
