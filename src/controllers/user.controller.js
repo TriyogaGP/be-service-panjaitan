@@ -112,9 +112,10 @@ function getDashboard (models) {
 
 function getDashboardTwo (models) {
   return async (req, res, next) => {
+		let { kodeWilayah } = req.query
     try {
 			const { consumerType, wilayah } = req.JWTDecoded
-			const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: wilayah, statusKomisaris: true } })
+			const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: kodeWilayah ? kodeWilayah : wilayah, statusKomisaris: true } })
 			const responseData = await Promise.all(dataKomisarisWilayah.map(async val => {
 				const count = await models.Biodata.count({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
 				const dataBiodata = await models.Biodata.findAll({where: { komisarisWilayah: val.kodeKomisarisWilayah }});
@@ -135,6 +136,7 @@ function getDashboardTwo (models) {
 					kodeKomisarisWilayah: val.kodeKomisarisWilayah,
 					kodeWilayah: val.kodeWilayah,
 					namaKomisaris: val.namaKomisaris,
+					daerah: val.daerah,
 					jml: count,
 					totalJiwa: anak.length + countObj.suami + countObj.istri,
 				}
@@ -3231,7 +3233,8 @@ function exportExcel (models) {
 							return {
 								nourut: `${setNum(++i)}\n${val.ompu}${val.generasi}`,
 								nik: val.nik,
-								nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} (${val.tempatSuami ? val.tempatSuami : '-'}, ${val.tanggalLahirSuami ? convertDateTime3(val.tanggalLahirSuami) : '-'}) / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} (${val.tempatIstri ? val.tempatIstri : '-'}, ${val.tanggalLahirIstri ? convertDateTime3(val.tanggalLahirIstri) : '-'})`,
+								nama: `1. ${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} ${val.tempatSuami || val.tanggalLahirSuami ? `(${val.tempatSuami}, ${convertDateTime3(val.tanggalLahirSuami)})` : ''}\n2. ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} ${val.tempatIstri || val.tanggalLahirIstri ? `(${val.tempatIstri}, ${convertDateTime3(val.tanggalLahirIstri)})` : ''}`,
+								// nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} (${val.tempatSuami ? val.tempatSuami : '-'}, ${val.tanggalLahirSuami ? convertDateTime3(val.tanggalLahirSuami) : '-'}) / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} (${val.tempatIstri ? val.tempatIstri : '-'}, ${val.tanggalLahirIstri ? convertDateTime3(val.tanggalLahirIstri) : '-'})`,
 								tanggungan: val.Anaks.length ? _.join(anak, '\n') : '-',
 								alamat: `${val.alamat ? val.alamat : '-'}${kelurahan ? `, ${kelurahan.dataValues.jenisKelDes} ${kelurahan.dataValues.nama}` : ''}${kecamatan ? `, Kecamatan ${kecamatan.dataValues.nama}` : ''}${kabkota ? `, ${kabkota.dataValues.jenisKabKota} ${kabkota.dataValues.nama}` : ''}${provinsi ? `, ${provinsi.dataValues.nama}` : ''} ${val.kodePos ? val.kodePos : ''}\nTelp: ${val.statusSuami === 'Meninggal' ? val.telpIstri ? val.telpIstri : '-' : val.telp ? val.telp : '-'}`,
 							}
@@ -3250,11 +3253,11 @@ function exportExcel (models) {
 	
 						let worksheetBiodata = workbook.addWorksheet(`${dataTampung[index].kodeKomisarisWilayah}`);
 	
-						worksheetBiodata.getCell('A1').value = 'Nama Komisaris';
+						worksheetBiodata.getCell('A1').value = 'Komisaris';
 						worksheetBiodata.getCell('A1').font = { name: 'Times New Normal', size: 11, bold: true };
 						worksheetBiodata.getCell('B1').value = `${dataTampung[index].namaKomisaris}`;
 						worksheetBiodata.getCell('B1').font = { name: 'Times New Normal', size: 11, bold: true };
-						worksheetBiodata.getCell('A2').value = 'Daerah Komisaris';
+						worksheetBiodata.getCell('A2').value = 'Komisariat';
 						worksheetBiodata.getCell('A2').font = { name: 'Times New Normal', size: 11, bold: true };
 						worksheetBiodata.getCell('B2').value = `${dataTampung[index].daerah}`;
 						worksheetBiodata.getCell('B2').font = { name: 'Times New Normal', size: 11, bold: true };
@@ -3273,9 +3276,9 @@ function exportExcel (models) {
 								worksheetBiodata.getRow(4).height = 25;
 								worksheetBiodata.getColumn(1).width = 25;
 								worksheetBiodata.getColumn(2).width = 25;
-								worksheetBiodata.getColumn(3).width = 30;
-								worksheetBiodata.getColumn(4).width = 40;
-								worksheetBiodata.getColumn(5).width = 70;
+								worksheetBiodata.getColumn(3).width = 45;
+								worksheetBiodata.getColumn(4).width = 45;
+								worksheetBiodata.getColumn(5).width = 50;
 	
 								worksheetBiodata.getCell('A4').value = 'No. Urut PSO Sundut';
 								worksheetBiodata.getCell('B4').value = 'No. Anggota';

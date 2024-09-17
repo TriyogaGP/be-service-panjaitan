@@ -80,6 +80,7 @@ function getAnggota (models) {
 			const whereKey = keyword ? {
 				[Op.or]: [
 					{ namaLengkap : { [Op.like]: `%${keyword}%` }},
+					{ namaIstri : { [Op.like]: `%${keyword}%` }},
 					{ nik : { [Op.like]: `%${keyword}%` }},
 					{ '$WilayahPanjaitan.label$' : { [Op.like]: `%${keyword}%` }},
 					{ '$KomisarisWilayah.nama_komisaris$' : { [Op.like]: `%${keyword}%` }},
