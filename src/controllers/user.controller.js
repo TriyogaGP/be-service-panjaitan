@@ -27,6 +27,7 @@ const {
 	makeRandomAngka,
 	uppercaseLetterFirst,
 	uppercaseLetterFirst2,
+	uppercaseLetterFirst3,
 	buildMysqlResponseWithPagination,
 	paginate,
 	buildOrderQuery,
@@ -392,10 +393,10 @@ function getBiodata (models) {
 				return {
 					idBiodata: val.idBiodata,
 					nik: val.nik,
-					namaLengkap: val.namaLengkap,
-					tempatSuami: val.tempatSuami,
+					namaLengkap: val.namaLengkap ? uppercaseLetterFirst3(val.namaLengkap) : null,
+					tempatSuami: val.tempatSuami ? uppercaseLetterFirst3(val.tempatSuami) : null,
 					tanggalLahirSuami: val.tanggalLahirSuami,
-					alamat: val.alamat,
+					alamat: val.alamat ? uppercaseLetterFirst3(val.alamat) : '',
 					provinsi: val.provinsi ? await _wilayah2023Option({ models, kode: val.provinsi, bagian: 'provinsi' }) : null,
 					kabKota: val.kabKota ? await _wilayah2023Option({ models, kode: val.kabKota, bagian: 'kabkota' }) : null,
 					kecamatan: val.kecamatan ? await _wilayah2023Option({ models, kode: val.kecamatan, bagian: 'kecamatan' }) : null,
@@ -403,13 +404,13 @@ function getBiodata (models) {
 					kodePos: val.kodePos,
 					pekerjaanSuami: val.pekerjaanSuami,
 					telp: val.telp,
-					namaIstri: val.namaIstri,
-					tempatIstri: val.tempatIstri,
+					namaIstri: val.namaIstri ? uppercaseLetterFirst3(val.namaIstri) : null,
+					tempatIstri: val.tempatIstri ? uppercaseLetterFirst3(val.tempatIstri) : null,
 					tanggalLahirIstri: val.tanggalLahirIstri,
 					pekerjaanIstri: val.pekerjaanIstri,
 					telpIstri: val.telpIstri,
 					anak: await _anakOption({ models, idBiodata: val.idBiodata }),
-					jabatanPengurus: val.jabatanPengurus,
+					jabatanPengurus: val.jabatanPengurus ? uppercaseLetterFirst3(val.jabatanPengurus) : null,
 					// wilayah: await _wilayahpanjaitanOption({ models, kode: val.wilayah }),
 					wilayah: val.WilayahPanjaitan,
 					komisarisWilayah: await _komisariswilayahOption({ models, kodeKomisarisWilayah: val.komisarisWilayah }),
@@ -2896,28 +2897,28 @@ function exportExcel (models) {
 							let kabkota = val.dataValues.kabKota ? await _wilayah2023Option({ models, kode: val.dataValues.kabKota, bagian: 'kabkota' }) : val.dataValues.kabKota
 							let kecamatan = val.dataValues.kecamatan ? await _wilayah2023Option({ models, kode: val.dataValues.kecamatan, bagian: 'kecamatan' }) : val.dataValues.kecamatan
 							let kelurahan = val.dataValues.kelurahan ? await _wilayah2023Option({ models, kode: val.dataValues.kelurahan, bagian: 'keldes' }) : val.dataValues.kelurahan
-							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? convertDateTime3(str.tanggalLahir) : '-'})`) : []
+							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${uppercaseLetterFirst3(str.namaAnak)} - ${str.kategoriAnak} (${str.tanggalLahir ? convertDateTime3(str.tanggalLahir) : '-'})`) : []
 							
 							return {
 								idBiodata: val.dataValues.idBiodata,
 								nik: val.dataValues.nik,
-								namaSuami: val.dataValues.namaLengkap,
-								tempatSuami: val.dataValues.tempatSuami ? val.dataValues.tempatSuami : '-',
+								namaSuami: uppercaseLetterFirst3(val.dataValues.namaLengkap),
+								tempatSuami: val.dataValues.tempatSuami ? uppercaseLetterFirst3(val.dataValues.tempatSuami) : '-',
 								tanggalLahirSuami: val.dataValues.tanggalLahirSuami ? dateconvert(val.dataValues.tanggalLahirSuami) : '-',
 								pekerjaanSuami: val.dataValues.pekerjaanSuami ? val.dataValues.pekerjaanSuami : '-',
 								telp: val.dataValues.telp ? val.dataValues.telp : '-',
-								alamat: val.dataValues.alamat ? val.dataValues.alamat : '-',
+								alamat: val.dataValues.alamat ? uppercaseLetterFirst3(val.dataValues.alamat) : '-',
 								provinsi: provinsi ? provinsi.dataValues.nama : '-',
 								kabKota: kabkota ? kabkota.dataValues.nama : '-',
 								kecamatan: kecamatan ? kecamatan.dataValues.nama : '-',
 								kelurahan: kelurahan ? kelurahan.dataValues.nama : '-',
 								kodePos: val.dataValues.kodePos ? val.dataValues.kodePos : '-',
-								namaIstri: val.dataValues.namaIstri,
-								tempatIstri: val.dataValues.tempatIstri ? val.dataValues.tempatIstri : '-',
+								namaIstri: val.dataValues.namaIstri ? uppercaseLetterFirst3(val.dataValues.namaIstri) : '',
+								tempatIstri: val.dataValues.tempatIstri ? uppercaseLetterFirst3(val.dataValues.tempatIstri) : '-',
 								tanggalLahirIstri: val.dataValues.tanggalLahirIstri ? dateconvert(val.dataValues.tanggalLahirIstri) : '-',
 								pekerjaanIstri: val.dataValues.pekerjaanIstri ? val.dataValues.pekerjaanIstri : '-',						
 								telpIstri: val.dataValues.telpIstri ? val.dataValues.telpIstri : '-',
-								jabatanPengurus: val.dataValues.jabatanPengurus,
+								jabatanPengurus: val.dataValues.jabatanPengurus ? uppercaseLetterFirst3(val.dataValues.jabatanPengurus) : '',
 								wilayah: wilayah.dataValues.label,
 								namaKomisarisWilayah: komisaris_wilayah.dataValues.namaKomisaris,
 								daerah: komisaris_wilayah.dataValues.daerah,
@@ -3054,28 +3055,28 @@ function exportExcel (models) {
 							let kabkota = val.dataValues.kabKota ? await _wilayah2023Option({ models, kode: val.dataValues.kabKota, bagian: 'kabkota' }) : val.dataValues.kabKota
 							let kecamatan = val.dataValues.kecamatan ? await _wilayah2023Option({ models, kode: val.dataValues.kecamatan, bagian: 'kecamatan' }) : val.dataValues.kecamatan
 							let kelurahan = val.dataValues.kelurahan ? await _wilayah2023Option({ models, kode: val.dataValues.kelurahan, bagian: 'keldes' }) : val.dataValues.kelurahan
-							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${str.namaAnak} - ${str.kategoriAnak} (${str.tanggalLahir ? convertDateTime3(str.tanggalLahir) : '-'})`) : []
+							let anak = val.dataValues.Anaks.length ? val.dataValues.Anaks.filter(str => str.statusAnak === 'Hidup').map(str => `${uppercaseLetterFirst3(str.namaAnak)} - ${str.kategoriAnak} (${str.tanggalLahir ? convertDateTime3(str.tanggalLahir) : '-'})`) : []
 							
 							return {
 								idBiodata: val.dataValues.idBiodata,
 								nik: val.dataValues.nik,
 								namaSuami: val.dataValues.namaLengkap,
-								tempatSuami: val.dataValues.tempatSuami ? val.dataValues.tempatSuami : '-',
+								tempatSuami: val.dataValues.tempatSuami ? uppercaseLetterFirst3(val.dataValues.tempatSuami) : '-',
 								tanggalLahirSuami: val.dataValues.tanggalLahirSuami ? dateconvert(val.dataValues.tanggalLahirSuami) : '-',
 								pekerjaanSuami: val.dataValues.pekerjaanSuami ? val.dataValues.pekerjaanSuami : '-',
 								telp: val.dataValues.telp ? val.dataValues.telp : '-',
-								alamat: val.dataValues.alamat ? val.dataValues.alamat : '-',
+								alamat: val.dataValues.alamat ? uppercaseLetterFirst3(val.dataValues.alamat) : '-',
 								provinsi: provinsi ? provinsi.dataValues.nama : '-',
 								kabKota: kabkota ? kabkota.dataValues.nama : '-',
 								kecamatan: kecamatan ? kecamatan.dataValues.nama : '-',
 								kelurahan: kelurahan ? kelurahan.dataValues.nama : '-',
 								kodePos: val.dataValues.kodePos ? val.dataValues.kodePos : '-',
-								namaIstri: val.dataValues.namaIstri,
-								tempatIstri: val.dataValues.tempatIstri ? val.dataValues.tempatIstri : '-',
+								namaIstri: val.dataValues.namaIstri ? uppercaseLetterFirst3(val.dataValues.namaIstri) : '',
+								tempatIstri: val.dataValues.tempatIstri ? uppercaseLetterFirst3(val.dataValues.tempatIstri) : '-',
 								tanggalLahirIstri: val.dataValues.tanggalLahirIstri ? dateconvert(val.dataValues.tanggalLahirIstri) : '-',
 								pekerjaanIstri: val.dataValues.pekerjaanIstri ? val.dataValues.pekerjaanIstri : '-',						
 								telpIstri: val.dataValues.telpIstri ? val.dataValues.telpIstri : '-',
-								jabatanPengurus: val.dataValues.jabatanPengurus,
+								jabatanPengurus: val.dataValues.jabatanPengurus ? uppercaseLetterFirst3(val.dataValues.jabatanPengurus) : '',
 								wilayah: wilayah.dataValues.label,
 								namaKomisarisWilayah: komisaris_wilayah.dataValues.namaKomisaris,
 								daerah: komisaris_wilayah.dataValues.daerah,
@@ -3228,12 +3229,12 @@ function exportExcel (models) {
 							let kecamatan = val.kecamatan ? await _wilayah2023Option({ models, kode: val.kecamatan, bagian: 'kecamatan' }) : val.kecamatan
 							let kelurahan = val.kelurahan ? await _wilayah2023Option({ models, kode: val.kelurahan, bagian: 'keldes' }) : val.kelurahan
 							const tanggungan = val.Anaks.length ? _.sortBy(val.Anaks, [function(o) { return o.tanggalLahir; }]) : []
-							let anak = tanggungan.length ? tanggungan.filter(str => str.statusAnak === 'Hidup').map((value, i) => `${++i}. ${value.namaAnak} - ${value.kategoriAnak} (${value.tanggalLahir ? convertDateTime3(value.tanggalLahir) : '-'})`) : '-'
+							let anak = tanggungan.length ? tanggungan.filter(str => str.statusAnak === 'Hidup').map((value, i) => `${++i}. ${uppercaseLetterFirst3(value.namaAnak)} - ${value.kategoriAnak} (${value.tanggalLahir ? convertDateTime3(value.tanggalLahir) : '-'})`) : '-'
 							
 							return {
 								nourut: `${setNum(++i)}\n${val.ompu}${val.generasi}`,
 								nik: val.nik,
-								nama: `1. ${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} ${val.tempatSuami || val.tanggalLahirSuami ? `(${val.tempatSuami}, ${convertDateTime3(val.tanggalLahirSuami)})` : ''}\n2. ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} ${val.tempatIstri || val.tanggalLahirIstri ? `(${val.tempatIstri}, ${convertDateTime3(val.tanggalLahirIstri)})` : ''}`,
+								nama: `1. ${uppercaseLetterFirst3(val.namaLengkap)}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} ${val.tempatSuami || val.tanggalLahirSuami ? `(${uppercaseLetterFirst3(val.tempatSuami)}, ${convertDateTime3(val.tanggalLahirSuami)})` : ''}\n2. ${val.namaIstri ? uppercaseLetterFirst3(val.namaIstri):''}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} ${val.tempatIstri || val.tanggalLahirIstri ? `(${uppercaseLetterFirst3(val.tempatIstri)}, ${convertDateTime3(val.tanggalLahirIstri)})` : ''}`,
 								// nama: `${val.namaLengkap}${val.statusSuami === 'Meninggal' ? ' (+)' : ''} (${val.tempatSuami ? val.tempatSuami : '-'}, ${val.tanggalLahirSuami ? convertDateTime3(val.tanggalLahirSuami) : '-'}) / ${val.namaIstri}${val.statusIstri === 'Meninggal' ? ' (+)' : ''} (${val.tempatIstri ? val.tempatIstri : '-'}, ${val.tanggalLahirIstri ? convertDateTime3(val.tanggalLahirIstri) : '-'})`,
 								tanggungan: val.Anaks.length ? _.join(anak, '\n') : '-',
 								alamat: `${val.alamat ? val.alamat : '-'}${kelurahan ? `, ${kelurahan.dataValues.jenisKelDes} ${kelurahan.dataValues.nama}` : ''}${kecamatan ? `, Kecamatan ${kecamatan.dataValues.nama}` : ''}${kabkota ? `, ${kabkota.dataValues.jenisKabKota} ${kabkota.dataValues.nama}` : ''}${provinsi ? `, ${provinsi.dataValues.nama}` : ''} ${val.kodePos ? val.kodePos : ''}\nTelp: ${val.statusSuami === 'Meninggal' ? val.telpIstri ? val.telpIstri : '-' : val.telp ? val.telp : '-'}`,
@@ -4152,31 +4153,31 @@ function testing (models) {
 			// 	return countObj
 			// }))
 
-			const dataWilayah = await _allOption({ table: models.WilayahPanjaitan })
-			const responseData = await Promise.all(dataWilayah.map(async val => {
-				const count = await models.Biodata.count({where: { wilayah: val.kode }});
-				const dataBiodata = await models.Biodata.findAll({where: { wilayah: val.kode }});
-				const countObj = dataBiodata.reduce((acc, curr) => {
-					const tmp = acc
-					const { statusSuami, statusIstri } = curr
-					if(statusSuami === 'Hidup') tmp.suami += 1
-					if(statusIstri === 'Hidup') tmp.istri += 1
-					return tmp
-				}, {
-					suami: 0,
-					istri: 0,
-				});
+			// const dataWilayah = await _allOption({ table: models.WilayahPanjaitan })
+			// const responseData = await Promise.all(dataWilayah.map(async val => {
+			// 	const count = await models.Biodata.count({where: { wilayah: val.kode }});
+			// 	const dataBiodata = await models.Biodata.findAll({where: { wilayah: val.kode }});
+			// 	const countObj = dataBiodata.reduce((acc, curr) => {
+			// 		const tmp = acc
+			// 		const { statusSuami, statusIstri } = curr
+			// 		if(statusSuami === 'Hidup') tmp.suami += 1
+			// 		if(statusIstri === 'Hidup') tmp.istri += 1
+			// 		return tmp
+			// 	}, {
+			// 		suami: 0,
+			// 		istri: 0,
+			// 	});
 
-				const databiodata = await models.Biodata.findAll({where: { wilayah: val.kode }, attributes: ['idBiodata']});
-				const anak = await _anakOption({ models, idBiodata: databiodata.map(str => str.idBiodata) })
-				let obj = {
-					kode: val.kode,
-					label: val.label,
-					jml: count,
-					totalJiwa: anak.length + countObj.suami + countObj.istri,
-				}
-				return obj;
-			}))
+			// 	const databiodata = await models.Biodata.findAll({where: { wilayah: val.kode }, attributes: ['idBiodata']});
+			// 	const anak = await _anakOption({ models, idBiodata: databiodata.map(str => str.idBiodata) })
+			// 	let obj = {
+			// 		kode: val.kode,
+			// 		label: val.label,
+			// 		jml: count,
+			// 		totalJiwa: anak.length + countObj.suami + countObj.istri,
+			// 	}
+			// 	return obj;
+			// }))
 
 			// const dataKomisarisWilayah = await _allOption({ table: models.KomisarisWilayah, where: { kodeWilayah: '01', statusKomisaris: true } })
 			// const responseData = await Promise.all(dataKomisarisWilayah.map(async val => {
@@ -4204,7 +4205,17 @@ function testing (models) {
 			// 	}
 			// 	return obj;
 			// }))
-			return OK(res, responseData)
+			const toTitleCase = (str) => {
+				return str.replace(
+					// /\b[a-z]/g,
+					/\w\S*/g,
+					text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+				);
+			}
+			const text = "ir.h.drs.triyoga, s.kom"
+			const result = toTitleCase(text)
+			const result2 = text.replace(/\b[a-z]/g, (x) => x.toUpperCase())
+			return OK(res, {result, result2})
 		} catch (err) {
 			return NOT_FOUND(res, err.message)
 		}
